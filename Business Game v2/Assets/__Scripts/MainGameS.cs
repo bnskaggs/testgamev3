@@ -78,7 +78,7 @@ public class MainGameS : MonoBehaviour {
 
 
 	public string mun;
-	private string savepath = "Assets/Resources/savegame.txt";
+	private string savepath;
 
 
 	//NEW RULES
@@ -90,7 +90,7 @@ public class MainGameS : MonoBehaviour {
 
 	// Use this for initialization
 	void Start () {
-		
+		savepath = Application.persistentDataPath+"//"+"savegame.txt";
 		rollButton = GameObject.Find ("Roll Button");
 		AssignMovementSpots();
 		AssignPlayers ();

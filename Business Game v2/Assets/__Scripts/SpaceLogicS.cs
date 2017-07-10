@@ -38,13 +38,13 @@ public class SpaceLogicS : MonoBehaviour {
 	public int jailLoc;
 	//public GameObject[] hVisualHolders;
 
-	private string savepath = "Assets/Resources/savegame.txt";
+	private string savepath;
 
 	private bool changeOwners;
 
 	// Use this for initialization
 	void Start () {
-
+		savepath = Application.persistentDataPath+"//"+"savegame.txt";
 		AssignVisuals ();
 
 		//if (GameMasterS.level != GameMasterS.INTERN)
@@ -86,9 +86,9 @@ public class SpaceLogicS : MonoBehaviour {
 		char[] seperators2 = { '&' };
 
 		if(GameMasterS.level == GameMasterS.INDIA)
-			path = "Assets/Resources/india.txt";
+			path = Application.streamingAssetsPath+"//"+"india.txt";
 		if(GameMasterS.level == GameMasterS.INTERN)
-			path = "Assets/Resources/international.txt";
+			path = Application.streamingAssetsPath+"//"+"international.txt";
 		
 		StreamReader reader = new StreamReader(path); 
 
@@ -125,6 +125,7 @@ public class SpaceLogicS : MonoBehaviour {
 
 	public void LoadGameDataSecond()
 	{
+		savepath = Application.persistentDataPath+"//"+"savegame.txt";
 		char[] seperators = { ',' };
 		char[] seperators2 = { '&' };
 		StreamReader reader = new StreamReader(savepath); 
