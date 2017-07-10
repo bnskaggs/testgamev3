@@ -6,6 +6,7 @@ using UnityEngine.UI;
 public class SliderTextChangeS : MonoBehaviour {
 
 	public GameObject slider;
+	private string mun;
 
 	// Use this for initialization
 	void Start () {
@@ -16,6 +17,14 @@ public class SliderTextChangeS : MonoBehaviour {
 		});
 			{
 		}
+
+		mun = "#";
+
+		if (GameMasterS.level == GameMasterS.INDIA)
+			mun = "₹";
+		if (GameMasterS.level ==GameMasterS.INTERN)
+			mun = "$";
+		
 		
 	}
 	

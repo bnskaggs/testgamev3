@@ -76,10 +76,19 @@ public class MainGameS : MonoBehaviour {
 	List<Space> pinkProperties = new List<Space>();
 
 
+	public string mun;
+
+
+	//NEW RULES
+	public int die1 = -1;
+	public int die2= -5;
+	public GameObject doubleRollDisplay1;
+	public GameObject doubleRollDisplay2;
+	public int doublesCount;
 
 	// Use this for initialization
 	void Start () {
-		rollNumberDisplay = GameObject.Find ("Roll Number Display");
+		
 		rollButton = GameObject.Find ("Roll Button");
 		AssignMovementSpots();
 		AssignPlayers ();
@@ -90,6 +99,37 @@ public class MainGameS : MonoBehaviour {
 
 		playerNotes [0].GetComponent<Text>().text = "Your Turn";
 		loseCount = 0;
+
+
+		mun = "#";
+
+		if (GameMasterS.level == GameMasterS.INDIA)
+			mun = "₹";
+		if (GameMasterS.level ==GameMasterS.INTERN)
+			mun = "$";
+
+
+		rollNumberDisplay = GameObject.Find ("Roll Number Display");
+		doubleRollDisplay1= GameObject.Find ("Double Roll Display 1");
+		doubleRollDisplay2= GameObject.Find ("Double Roll Display 2");
+		if (GameMasterS.gameMode == GameMasterS.MOBILE) {
+			doubleRollDisplay1.SetActive (false);
+			doubleRollDisplay2.SetActive (false);
+
+			foreach (Player player in players) {
+				player.money = 12000;
+			}
+		}
+		if (GameMasterS.gameMode == GameMasterS.BOARD) {
+			rollNumberDisplay.SetActive (false);
+
+			foreach (Player player in players) {
+				player.money = 40000;
+			}
+
+		}
+				
+			
 		
 	}
 	
@@ -153,7 +193,7 @@ public class MainGameS : MonoBehaviour {
 			if (players [y].GetCurrentPos() == 36) {
 				players [y].SetCurrentPos (0);
 				if (!players [y].doNotCollectFromGo)
-					players [y].MoneyChange (2000);
+					players [y].MoneyChange (1500);
 
 			}
 			
@@ -171,6 +211,8 @@ public class MainGameS : MonoBehaviour {
 		//rollButton.GetComponent<Button> ().interactable = true;  Test without turn actions
 
 		rollNumberDisplay.GetComponent<Text> ().enabled = false;
+		doubleRollDisplay1.GetComponent<Text> ().enabled = false;
+		doubleRollDisplay2.GetComponent<Text> ().enabled = false;
 		rollButton.SetActive (false);
 		//TurnOnTurnActions ();
 		this.GetComponent<SpaceLogicS>().ResolveSpace(y,players[y].GetCurrentPos(),currentRoll);
@@ -178,10 +220,27 @@ public class MainGameS : MonoBehaviour {
 		
 
 	}
+
+	public void MovePlayerToLoc(int loc){
+		
+		int y = currentPlayer; 
+
+			iTween.MoveTo (players [y].playerObject, moveSpots [y,loc].transform.position, 0.5f);
+			
+			
+
+
+	}
 		
 	int DiceRoll(){
-		//return 7;
-		return( Random.Range (1, 7));
+		if(GameMasterS.gameMode==GameMasterS.MOBILE)
+			return( Random.Range (1, 7));
+		if (GameMasterS.gameMode == GameMasterS.BOARD) {
+			die1 = Random.Range (1, 7);
+			die2 = Random.Range (1, 7);
+		}
+		return(die1 + die2);
+		
 
 
 	}
@@ -189,9 +248,39 @@ public class MainGameS : MonoBehaviour {
 	public void OnRollButtonPush(){
 		rollButton.GetComponent<Button> ().interactable = false;
 		currentRoll = DiceRoll ();
-		rollNumberDisplay.GetComponent<Text> ().enabled = true;
-		rollNumberDisplay.GetComponent<Text> ().text = currentRoll.ToString();
-		StartCoroutine(MovePlayer());
+		if (GameMasterS.gameMode == GameMasterS.MOBILE) {
+			rollNumberDisplay.GetComponent<Text> ().enabled = true;
+			rollNumberDisplay.GetComponent<Text> ().text = currentRoll.ToString ();
+		}
+		if (GameMasterS.gameMode == GameMasterS.BOARD) {
+			doubleRollDisplay1.GetComponent<Text> ().enabled = true;
+			doubleRollDisplay1.GetComponent<Text> ().text = die1.ToString ();
+
+			doubleRollDisplay2.GetComponent<Text> ().enabled = true;
+			doubleRollDisplay2.GetComponent<Text> ().text = die2.ToString ();
+
+		}
+
+		if (GameMasterS.gameMode == GameMasterS.BOARD && die1 == die2) {
+			doublesCount++;
+			if (doublesCount == 3) {
+				//display note on screen
+				this.GetComponent<SpaceLogicS> ().GoToJail ();
+				doubleRollDisplay1.GetComponent<Text> ().enabled = false;
+				doubleRollDisplay2.GetComponent<Text> ().enabled = false;
+				rollButton.SetActive (false);
+				die1 = -1;
+				die2 = -3;
+				int jailspace = this.GetComponent<SpaceLogicS> ().jailLoc;
+				MovePlayerToLoc (jailspace);
+
+			} else
+				StartCoroutine (MovePlayer ());
+
+		} else {
+			StartCoroutine (MovePlayer ());
+		}
+
 
 	
 
@@ -212,13 +301,17 @@ public class MainGameS : MonoBehaviour {
 	}
 
 	public void TurnOnTurnActions(){
+		if (GameMasterS.gameMode == GameMasterS.BOARD && die1==die2) {
+			Reroll ();
 
+		} else {
 
-		tradeButton.SetActive (true);
-		mortgageButton.SetActive (true);
-		if(GameMasterS.gameMode == GameMasterS.BOARD)
-			developButton.SetActive (true);
-		endTurnButton.SetActive (true);
+			tradeButton.SetActive (true);
+			mortgageButton.SetActive (true);
+			if (GameMasterS.gameMode == GameMasterS.BOARD)
+				developButton.SetActive (true);
+			endTurnButton.SetActive (true);
+		}
 
 
 	}
@@ -233,9 +326,8 @@ public class MainGameS : MonoBehaviour {
 	}
 
 
-
-
-	// =========================================================TRADE==================================================
+		
+	// =========================================================MORTGAGE==================================================
 	public void pushMortgageButton(){
 		TurnOffTurnActions ();
 		goBackbutton.SetActive (true);
@@ -503,11 +595,11 @@ public class MainGameS : MonoBehaviour {
 		string houseOrHotel = "";
 
 		if (this.GetComponent<SpaceLogicS> ().Gameboard [space].numberOfHouses < 3) {
-			developSelected.GetComponent<Text> ().text = sname + " build house: $" + this.GetComponent<SpaceLogicS> ().Gameboard [space].costPerHouse;
+			developSelected.GetComponent<Text> ().text = sname + " build house: "+mun + this.GetComponent<SpaceLogicS> ().Gameboard [space].costPerHouse;
 			houseOrHotel = "house";
 
 		} else if (!this.GetComponent<SpaceLogicS> ().Gameboard [space].hotel) {
-			developSelected.GetComponent<Text> ().text = sname + " build hotel: $" + this.GetComponent<SpaceLogicS> ().Gameboard [space].costPerHouse;
+			developSelected.GetComponent<Text> ().text = sname + " build hotel: "+mun+ this.GetComponent<SpaceLogicS> ().Gameboard [space].costPerHouse;
 			houseOrHotel = "hotel";
 		} else {
 			developSelected.GetComponent<Text> ().text = sname + " is full";
@@ -631,7 +723,7 @@ public class MainGameS : MonoBehaviour {
 		tradeOffer = tradeOfferSlider.GetComponent<Slider> ().value;
 		tradeOfferSlider.GetComponent<Slider> ().value = 0;
 		tradeOfferText.SetActive (false);
-		tradeOfferText.GetComponent<Text>().text="$0";
+		tradeOfferText.GetComponent<Text>().text=mun+"0";
 		//tradeOffer = tradeOfferSlider.GetComponent<Slider> ().value;
 		tradeInitiateButton.SetActive (false);
 		tradeInitiateButton.GetComponent<Button> ().onClick.RemoveAllListeners ();
@@ -653,8 +745,8 @@ public class MainGameS : MonoBehaviour {
 		tradeText.SetActive (true);
 		tradeTitle.GetComponent<Text> ().text =string.Format ("P{0} Trade", (this.GetComponent<SpaceLogicS>().Gameboard[count].owner+1).ToString());
 
-		tradeText.GetComponent<Text> ().text =string.Format ("P{0} will trade ${1} for {2}", 
-			(currentPlayer+1).ToString(), tradeOffer.ToString(), sname);
+		tradeText.GetComponent<Text> ().text =string.Format ("P{0} will trade {4}{1} for {2}", 
+			(currentPlayer+1).ToString(), tradeOffer.ToString(), sname,mun);
 		
 
 	}
@@ -671,7 +763,7 @@ public class MainGameS : MonoBehaviour {
 		this.GetComponent<TokensS> ().ChangeOwnership (count, currentPlayer);
 
 		tradeSelected.SetActive (false);
-		tradeText.GetComponent<Text> ().text = string.Format ("Traded P{0} ${1} for {2}", (this.GetComponent<SpaceLogicS> ().Gameboard [count].owner + 1).ToString (), tradeOffer, sname);
+		tradeText.GetComponent<Text> ().text = string.Format ("Traded P{0} {4}{1} for {2}", (this.GetComponent<SpaceLogicS> ().Gameboard [count].owner + 1).ToString (), tradeOffer, sname,mun);
 		
 		ListenerCleanup ();
 
@@ -749,11 +841,14 @@ public class MainGameS : MonoBehaviour {
 			mortgageButton.SetActive (false);
 			developButton.SetActive (false);
 			endTurnButton.SetActive (false);
+			this.GetComponent<SaveGameS> ().SaveTheGame ();
 			rollButton.GetComponent<Button> ().interactable = true;
+
 		} else {
 			youLoseDialog.SetActive (true);
 		}
 
+		doublesCount = 0;
 
 	}
 		

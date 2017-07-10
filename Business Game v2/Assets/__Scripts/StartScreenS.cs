@@ -74,10 +74,12 @@ public class StartScreenS : MonoBehaviour {
 
 		case "International":
 			levelToPlay = "Scene_1_Game_Original";
+			GameMasterS.level = GameMasterS.INTERN;
 			break;
 
 		case "India":
 			levelToPlay = "Scene_2_Game_NewBoard";
+			GameMasterS.level = GameMasterS.INDIA;
 			break;
 
 

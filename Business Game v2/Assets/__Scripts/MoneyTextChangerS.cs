@@ -9,6 +9,8 @@ public class MoneyTextChangerS : MonoBehaviour {
 
 	public GameObject[] MoneyText;
 
+	private string mun;
+
 
 	void Start(){
 		MoneyText = new GameObject[4];
@@ -17,6 +19,14 @@ public class MoneyTextChangerS : MonoBehaviour {
 		MoneyText [1] = GameObject.Find ("Player 2 Money");
 		MoneyText [2] = GameObject.Find ("Player 3 Money");
 		MoneyText [3] = GameObject.Find ("Player 4 Money");
+
+		mun = "#";
+
+		if (GameMasterS.level == GameMasterS.INDIA)
+			mun = "₹";
+		if (GameMasterS.level ==GameMasterS.INTERN)
+			mun = "$";
+		
 
 
 
@@ -29,7 +39,7 @@ public class MoneyTextChangerS : MonoBehaviour {
 
 		if(!playersNullFlag){
 			for(int x = 0; x<4;x++){
-				MoneyText [x].GetComponent<Text> ().text ="$"+ this.GetComponent<MainGameS>().players [x].money.ToString();
+				MoneyText [x].GetComponent<Text> ().text =mun+ this.GetComponent<MainGameS>().players [x].money.ToString();
 
 			}
 

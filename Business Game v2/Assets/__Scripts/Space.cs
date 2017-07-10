@@ -4,7 +4,7 @@ using UnityEngine;
 
 
 public enum spaceType{
-	utility, jail, rest, tax, chance, property, start, community, club
+	utility, jail, rest, tax, chance, property, start, community, club, wtax,itax
 
 }
 

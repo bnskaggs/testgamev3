@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using System.IO;
 
 public class SpaceLogicS : MonoBehaviour {
 
@@ -33,6 +34,8 @@ public class SpaceLogicS : MonoBehaviour {
 
 	public bool auctionFlag = false;
 
+	private string mun;
+	public int jailLoc;
 	//public GameObject[] hVisualHolders;
 
 	// Use this for initialization
@@ -40,6 +43,17 @@ public class SpaceLogicS : MonoBehaviour {
 
 		AssignVisuals ();
 
+		//if (GameMasterS.level != GameMasterS.INTERN)
+			GetSpaceData ();
+		
+		/*	int count = -1;
+		foreach (Space space in Gameboard) {
+			count++;
+			if (space.type == spaceType.jail)
+				jailLoc = count;
+		}*/
+			
+		
 		/*foreach(Space space in Gameboard)
 		{
 			space.owned = true;
@@ -47,11 +61,131 @@ public class SpaceLogicS : MonoBehaviour {
 		}*/
 
 		//int count = -1;
+
+		mun = "#";
+
+		if (GameMasterS.level == GameMasterS.INDIA)
+			mun = "₹";
+		if (GameMasterS.level ==GameMasterS.INTERN)
+			mun = "$";
+		
 	
 
 
 		
 	}
+
+	public void GetSpaceData(){
+
+		string path = null;
+		char[] seperators = { ',' };
+		char[] seperators2 = { '&' };
+
+		if(GameMasterS.level == GameMasterS.INDIA)
+			path = "Assets/Resources/india.txt";
+		if(GameMasterS.level == GameMasterS.INTERN)
+			path = "Assets/Resources/international.txt";
+		
+		StreamReader reader = new StreamReader(path); 
+
+		string headerLine = reader.ReadLine();
+		string numberOfSpaces = reader.ReadLine ();
+		//while(reader.Peek()>=0)
+			//print(reader.ReadLine());
+		for (int x = 0; x < int.Parse(numberOfSpaces);x++)
+		{
+			string data = reader.ReadLine ();
+			string[] spaceData = data.Split (seperators);
+
+			Gameboard [x].sName = spaceData [0];
+			SetSpaceType (spaceData [1],x);
+			Gameboard [x].costToBuy = float.Parse(spaceData [2]);
+			Gameboard [x].costToRent = float.Parse(spaceData [3]);
+			SetSpaceType (spaceData [4],x);
+			Gameboard [x].costPerHouse = float.Parse(spaceData [5]);
+			string[] houserent = spaceData [6].Split (seperators2);
+
+			Gameboard [x].costWithHouses = new float[3] {
+				float.Parse (houserent [0]),
+				float.Parse (houserent [1]),
+				float.Parse (houserent [2])
+			};
+			Gameboard [x].costPerHotel = float.Parse(spaceData [7]);
+			Gameboard [x].costWithHotel = float.Parse(spaceData [8]);
+
+		}
+		reader.Close();
+
+
+	}
+
+	void SetSpaceType(string type, int count){
+		switch (type) {
+		case "property":
+			Gameboard [count].type = spaceType.property;
+			break;
+		case "utility":
+			Gameboard [count].type = spaceType.utility;
+			break;
+		case "jail":
+			jailLoc = count;
+			Gameboard [count].type = spaceType.jail;
+			break;
+		case "tax":
+			Gameboard [count].type = spaceType.tax;
+			break;
+		case "itax":
+			Gameboard [count].type = spaceType.itax;
+			break;
+		case "wtax":
+			Gameboard [count].type = spaceType.wtax;
+			break;
+		case "chance":
+			Gameboard [count].type = spaceType.chance;
+			break;
+		case "start":
+			Gameboard [count].type = spaceType.start;
+			break;
+		case "community":
+			Gameboard [count].type = spaceType.community;
+			break;
+		case "club":
+			Gameboard [count].type = spaceType.club;
+			break;
+		case "rest":
+			Gameboard [count].type = spaceType.rest;
+			break;
+
+
+
+		}
+	}
+
+		void SetColorType(string type, int count){
+		switch (type) {
+		case "blue":
+			Gameboard [count].color = colorGroup.blue;
+			break;
+		case "red":
+			Gameboard [count].color = colorGroup.red;
+			break;
+		case "pink":
+			Gameboard [count].color = colorGroup.pink;
+			break;
+		case "green":
+			Gameboard [count].color = colorGroup.green;
+			break;
+		case "none":
+			Gameboard [count].color = colorGroup.none;
+			break;
+
+
+
+		}
+	}
+
+
+
 		
 	void AssignVisuals (){
 		//hVisualHolders = new GameObject[36];
@@ -86,6 +220,20 @@ public class SpaceLogicS : MonoBehaviour {
 
 		case spaceType.tax:
 			taxSpace ();
+			break;
+
+		case spaceType.itax:
+			if (GameMasterS.gameMode == GameMasterS.MOBILE) 
+				taxSpace ();
+			if (GameMasterS.gameMode == GameMasterS.BOARD) 
+				itaxSpace ();
+			break;
+
+		case spaceType.wtax:
+				if (GameMasterS.gameMode == GameMasterS.MOBILE) 
+					taxSpace ();
+				if (GameMasterS.gameMode == GameMasterS.BOARD) 
+					wtaxSpace ();
 			break;
 
 		case spaceType.property:
@@ -135,9 +283,54 @@ public class SpaceLogicS : MonoBehaviour {
 		this.GetComponent<MainGameS>().players [currentPlayer].MoneyChange (-500);
 		spaceTitle.GetComponent<Text> ().text = "Income Tax";
 		spaceTitle.SetActive (true);
-		spaceText.GetComponent<Text> ().text = "-$500";
+		spaceText.GetComponent<Text> ().text = "-"+mun+"500";
 		spaceText.SetActive (true);
 		oKButton.SetActive (true);
+
+	}
+
+	void wtaxSpace(){
+		int count = 0;
+		foreach (Space space in Gameboard) {
+			if (space.owner == currentPlayer) {
+				count += space.numberOfHouses;
+				if (space.hotel)
+					count++;
+			}
+
+		}
+
+		float moneyLost = count * 50;
+		if (moneyLost > 500)
+			moneyLost = 500;
+		this.GetComponent<MainGameS> ().players [currentPlayer].money -= moneyLost;
+		spaceTitle.GetComponent<Text> ().text = "Wealth Tax";
+		spaceTitle.SetActive (true);
+		spaceText.GetComponent<Text> ().text = string.Format("Lost {0}{1} in wealth taxes",mun,moneyLost);
+		spaceText.SetActive (true);
+		oKButton.SetActive (true);
+		
+
+	}
+
+	void itaxSpace(){
+		int count = 0;
+		foreach (Space space in Gameboard) {
+			if (space.owner == currentPlayer)
+				count++;
+
+		}
+
+		float moneyLost = count * 50;
+		if (moneyLost > 500)
+			moneyLost = 500;
+		this.GetComponent<MainGameS> ().players [currentPlayer].money -= moneyLost;
+		spaceTitle.GetComponent<Text> ().text = "Income Tax";
+		spaceTitle.SetActive (true);
+		spaceText.GetComponent<Text> ().text = string.Format("Lost {0}{1} in income taxes",mun,moneyLost);
+		spaceText.SetActive (true);
+		oKButton.SetActive (true);
+		
 
 	}
 
@@ -147,7 +340,7 @@ public class SpaceLogicS : MonoBehaviour {
 		if (!Gameboard [currentSpace].owned) {
 			spaceTitle.GetComponent<Text> ().text = Gameboard [currentSpace].sName;
 			spaceTitle.SetActive (true);
-			spaceText.GetComponent<Text> ().text = "$" + Gameboard [currentSpace].costToBuy.ToString ();
+			spaceText.GetComponent<Text> ().text = mun + Gameboard [currentSpace].costToBuy.ToString ();
 			spaceText.SetActive (true);
 			buyButton.SetActive (true);
 			auctionButton.SetActive (true);
@@ -158,7 +351,7 @@ public class SpaceLogicS : MonoBehaviour {
 
 				if (!Gameboard [currentSpace].isMortgaged) {
 					rent = CalculateRent ();
-					spaceText.GetComponent<Text> ().text = "Paid $" + rent + " to P" + (Gameboard [currentSpace].owner + 1).ToString ();
+					spaceText.GetComponent<Text> ().text = "Paid "+mun + rent + " to P" + (Gameboard [currentSpace].owner + 1).ToString ();
 					this.GetComponent<MainGameS>().players [currentPlayer].MoneyChange (-rent);
 					this.GetComponent<MainGameS>().players [Gameboard [currentSpace].owner].MoneyChange (rent);
 					spaceText.SetActive (true);
@@ -216,14 +409,14 @@ public class SpaceLogicS : MonoBehaviour {
 		if (Gameboard [currentSpace].tag == "utility1") {
 			if (currentSpace == water) {
 				if (Gameboard [currentSpace].owner == Gameboard [airport].owner)
-					return 1000;
+					return Gameboard [water].costWithHouses[0];
 				else
-					return 500;
+					return Gameboard [water].costToRent;
 			} else {
 				if (Gameboard [currentSpace].owner == Gameboard [water].owner)
-						return 1500;
+					return Gameboard [airport].costWithHouses[0];
 					else
-						return 1200;
+					return Gameboard [airport].costToRent;
 				
 			}
 
@@ -232,14 +425,14 @@ public class SpaceLogicS : MonoBehaviour {
 		if (Gameboard [currentSpace].tag == "utility2") {
 			if (currentSpace == railway) {
 				if (Gameboard [currentSpace].owner == Gameboard [best].owner)
-					return 1350;
+					return Gameboard [railway].costWithHouses[0];
 				else
-					return 1000;
+					return Gameboard [railway].costToRent;
 			} else {
 				if (Gameboard [currentSpace].owner == Gameboard [railway].owner)
-					return 1100;
+					return Gameboard [best].costWithHouses[0];
 				else
-					return 600;
+					return Gameboard [best].costToRent;
 
 			}
 
@@ -249,14 +442,14 @@ public class SpaceLogicS : MonoBehaviour {
 		if (Gameboard [currentSpace].tag == "utility3") {
 			if (currentSpace == electric) {
 				if (Gameboard [currentSpace].owner == Gameboard [motoboat].owner)
-					return 100 * currentRoll;
+					return Gameboard [electric].costWithHouses[0] * currentRoll;
 				else
-					return 50 * currentRoll;
+					return Gameboard [electric].costToRent * currentRoll;
 			} else {
 				if (Gameboard [currentSpace].owner == Gameboard [electric].owner)
-					return 200 * currentRoll;
+					return Gameboard [motoboat].costWithHouses[0] * currentRoll;
 				else
-					return 100 * currentRoll;
+					return  Gameboard [motoboat].costToRent*currentRoll;
 
 			}
 
@@ -291,16 +484,47 @@ public class SpaceLogicS : MonoBehaviour {
 
 	}
 
+	public void GoToJail(){
+		currentRoll = 0;
+		jailSpace ();
+		//Display reason for jail
+
+
+	}
+
 	void restSpace()
 	{
-		this.GetComponent<MainGameS>().players [currentPlayer].lostTurn = true;
-		this.GetComponent<MainGameS>().players [currentPlayer].lostTurnTime = 1;
-		spaceTitle.GetComponent<Text> ().text = "Rest House";
-		spaceTitle.SetActive (true);
-		spaceText.GetComponent<Text> ().text = "Lose Turn";
-		this.GetComponent<MainGameS>().playerNotes [currentPlayer].GetComponent<Text>().text = "Lost Turns: 2";
+		if (GameMasterS.gameMode == GameMasterS.MOBILE) {
+			this.GetComponent<MainGameS> ().players [currentPlayer].lostTurn = true;
+			this.GetComponent<MainGameS> ().players [currentPlayer].lostTurnTime = 1;
+			spaceTitle.GetComponent<Text> ().text = "Rest House";
+			spaceTitle.SetActive (true);
+			spaceText.GetComponent<Text> ().text = "Lose Turn";
+			this.GetComponent<MainGameS> ().playerNotes [currentPlayer].GetComponent<Text> ().text = "Lost Turns: 2";
+
+		}
+
+		if (GameMasterS.gameMode == GameMasterS.BOARD) {
+
+			int count = 0;
+			int payCount = 0;
+			foreach (Player player in this.GetComponent<MainGameS> ().players) {
+				if (this.GetComponent<MainGameS> ().players [count].inTheGame && count != currentPlayer) {
+					this.GetComponent<MainGameS> ().players [count].money -= 100;
+					payCount++;
+
+				}
+				count++;
+
+			}
+			this.GetComponent<MainGameS> ().players [currentPlayer].money += 100 * payCount;
+			spaceText.GetComponent<Text> ().text = string.Format ("Everyone gave {0}100 to p{1}", mun, (currentPlayer + 1.ToString ()));
+		}
 		spaceText.SetActive (true);
 		oKButton.SetActive (true);
+
+
+
 
 	}
 
@@ -335,7 +559,7 @@ public class SpaceLogicS : MonoBehaviour {
 		this.GetComponent<MainGameS>().players [currentPlayer].money -= 500;
 		spaceTitle.GetComponent<Text> ().text = "Community";
 		spaceTitle.SetActive (true);
-		spaceText.GetComponent<Text> ().text = "-$500";
+		spaceText.GetComponent<Text> ().text = "-"+mun+"500";
 		spaceText.SetActive (true);
 		oKButton.SetActive (true);
 
@@ -343,10 +567,37 @@ public class SpaceLogicS : MonoBehaviour {
 
 	void clubSpace()
 	{
-		this.GetComponent<MainGameS>().players [currentPlayer].money -= 200;
-		spaceTitle.GetComponent<Text> ().text = "Club";
+		spaceTitle.GetComponent<Text> ().text = Gameboard[currentSpace].sName;
 		spaceTitle.SetActive (true);
-		spaceText.GetComponent<Text> ().text = "-$200";
+		if (GameMasterS.gameMode == GameMasterS.MOBILE) {
+			this.GetComponent<MainGameS> ().players [currentPlayer].money -= 200;
+			//spaceTitle.GetComponent<Text> ().text = "Club";
+
+			spaceText.GetComponent<Text> ().text = "-" + mun + "200";
+
+
+		}
+
+		if (GameMasterS.gameMode == GameMasterS.BOARD) {
+
+			int count = 0;
+			int payCount = 0;
+				foreach(Player player in this.GetComponent<MainGameS> ().players){
+				if (this.GetComponent<MainGameS> ().players [count].inTheGame && count != currentPlayer){
+					this.GetComponent<MainGameS> ().players [count].money += 100;
+					payCount++;
+				
+					}
+				count++;
+
+			}
+			this.GetComponent<MainGameS> ().players [currentPlayer].money -= 100 * payCount;
+			spaceText.GetComponent<Text> ().text = string.Format("Everyone got {0}100 from p{1}",mun,(currentPlayer+1.ToString()));
+
+
+
+
+		}
 		spaceText.SetActive (true);
 		oKButton.SetActive (true);
 
@@ -356,6 +607,7 @@ public class SpaceLogicS : MonoBehaviour {
 		oKButton.SetActive (false);
 		spaceText.SetActive (false);
 		spaceTitle.SetActive (false);
+
 		this.GetComponent<MainGameS> ().TurnOnTurnActions ();
 
 
@@ -415,7 +667,7 @@ public class SpaceLogicS : MonoBehaviour {
 
 			bidText.SetActive (true);
 			bidSlider.SetActive (true);
-			bidText.GetComponent<Text> ().text = "$0";
+			bidText.GetComponent<Text> ().text = mun+"0";
 			bidSlider.GetComponent<Slider> ().value = 0;
 
 			bidSlider.GetComponent<Slider> ().maxValue = this.GetComponent<MainGameS> ().players [currentBidder].money;
@@ -444,7 +696,7 @@ public class SpaceLogicS : MonoBehaviour {
 			bidSlider.SetActive (false);
 			setBidButton.SetActive (false);
 			this.GetComponent<MainGameS>().players [currentBidWinner].money-=highestBid;
-			spaceText.GetComponent<Text> ().text = "P" + (currentBidWinner+1).ToString () + " wins with $"+ highestBid;
+			spaceText.GetComponent<Text> ().text = "P" + (currentBidWinner+1).ToString () + " wins with "+mun+ highestBid;
 			Gameboard [currentSpace].owned = true;
 			Gameboard [currentSpace].owner = currentBidWinner;
 			this.GetComponent<TokensS> ().ChangeOwnership (currentSpace, currentBidWinner);
