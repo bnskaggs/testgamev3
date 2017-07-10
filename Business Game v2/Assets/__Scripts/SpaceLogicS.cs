@@ -40,11 +40,14 @@ public class SpaceLogicS : MonoBehaviour {
 
 		AssignVisuals ();
 
-	/*foreach (Space space in Gameboard) {
+		/*foreach(Space space in Gameboard)
+		{
 			space.owned = true;
-			space.owner = 0;
-
+			space.owner = 1;
 		}*/
+
+		//int count = -1;
+	
 
 
 		
@@ -405,6 +408,7 @@ public class SpaceLogicS : MonoBehaviour {
 
 		while (this.GetComponent<MainGameS> ().players [currentBidder].inTheGame == false && currentBidder < 4)
 			currentBidder++;
+
 		if (currentBidder < 4) {
 			spaceText.SetActive (true);
 			spaceText.GetComponent<Text> ().text = "P" + (currentBidder + 1).ToString () + " bid";

@@ -23,7 +23,7 @@ public class MainGameS : MonoBehaviour {
 
 	public GameObject tradeButton;
 	public GameObject mortgageButton;
-	public GameObject redeemButton;
+	public GameObject developButton;
 	public GameObject endTurnButton;
 
 	public GameObject goBackbutton;
@@ -35,11 +35,23 @@ public class MainGameS : MonoBehaviour {
 	public GameObject mortgageSelected;
 	public GameObject mortgageEngageButton;
 
-	//REDEEM
-	public GameObject redeemTitle;
-	public GameObject redeemText;
-	public GameObject redeemSelected;
-	public GameObject redeemEngageButton;
+	//Develop
+	public GameObject developTitle;
+	public GameObject developText;
+	public GameObject developSelected;
+	public GameObject developEngageButton;
+
+	//Trade
+	public GameObject tradeTitle;
+	public GameObject tradeText;
+	public GameObject tradeSelected;
+	public GameObject tradeInitiateButton;
+	public float tradeOffer;
+	public GameObject tradeOfferSlider;
+	public GameObject tradeOfferText;
+	public GameObject tradeAccept;
+	public GameObject tradeReject;
+
 
 
 
@@ -204,7 +216,8 @@ public class MainGameS : MonoBehaviour {
 
 		tradeButton.SetActive (true);
 		mortgageButton.SetActive (true);
-		redeemButton.SetActive (true);
+		if(GameMasterS.gameMode == GameMasterS.BOARD)
+			developButton.SetActive (true);
 		endTurnButton.SetActive (true);
 
 
@@ -213,18 +226,16 @@ public class MainGameS : MonoBehaviour {
 	public void TurnOffTurnActions(){
 		tradeButton.SetActive (false);
 		mortgageButton.SetActive (false);
-		redeemButton.SetActive (false);
+		developButton.SetActive (false);
 		endTurnButton.SetActive (false);
 
 
 	}
 
 
-	public void pushTradeButton(){
-		TurnOffTurnActions ();
-		goBackbutton.SetActive (true);
 
-	}
+
+	// =========================================================TRADE==================================================
 	public void pushMortgageButton(){
 		TurnOffTurnActions ();
 		goBackbutton.SetActive (true);
@@ -326,12 +337,12 @@ public class MainGameS : MonoBehaviour {
 	}
 
 
+	// =========================================================Develop==================================================
 
-
-	public void pushRedeemButton(){
+	public void pushDevelopButton(){
 		TurnOffTurnActions ();
-		redeemTitle.SetActive (true);
-		redeemText.SetActive (true);
+		developTitle.SetActive (true);
+		developText.SetActive (true);
 		goBackbutton.SetActive (true);
 
 		redProperties.Clear ();
@@ -345,15 +356,15 @@ public class MainGameS : MonoBehaviour {
 		foreach (Space space in this.GetComponent<SpaceLogicS>().Gameboard) {
 			count++;
 			if (space.owner == currentPlayer) {
-				if(RedeemCheckSpace(space)){
-					//print ("redeem check was true");
+				if(DevelopCheckSpace(space)){
+					//print ("develop check was true");
 					space.spaceSelectButton.GetComponent<Button> ().interactable = true;
 					//space.spaceSelectButton.GetComponent<Button> ().onClick.AddListener () = pushMortgageSelectButton (space.sName, space.costToBuy/2);
 					string x = space.sName;
 					float y = space.costPerHouse;
 					int z = count;
 					space.spaceSelectButton.GetComponent<Button> ().onClick.AddListener (() => {
-						pushRedeemSelectButton (x, y,z);
+						pushDevelopSelectButton (x, y,z);
 					});
 
 				}
@@ -404,7 +415,7 @@ public class MainGameS : MonoBehaviour {
 
 	}
 
-	public bool RedeemCheckSpace(Space space)
+	public bool DevelopCheckSpace(Space space)
 	{
 		bool flag = false;
 		switch (space.color) {
@@ -484,35 +495,35 @@ public class MainGameS : MonoBehaviour {
 
 	}*/
 
-	public void pushRedeemSelectButton(string sname, float price, int space ){
+	public void pushDevelopSelectButton(string sname, float price, int space ){
 
-		redeemText.SetActive (false);
-		redeemSelected.SetActive (true);
+		developText.SetActive (false);
+		developSelected.SetActive (true);
 
 		string houseOrHotel = "";
 
 		if (this.GetComponent<SpaceLogicS> ().Gameboard [space].numberOfHouses < 3) {
-			redeemSelected.GetComponent<Text> ().text = sname + " build house: $" + this.GetComponent<SpaceLogicS> ().Gameboard [space].costPerHouse;
+			developSelected.GetComponent<Text> ().text = sname + " build house: $" + this.GetComponent<SpaceLogicS> ().Gameboard [space].costPerHouse;
 			houseOrHotel = "house";
 
 		} else if (!this.GetComponent<SpaceLogicS> ().Gameboard [space].hotel) {
-			redeemSelected.GetComponent<Text> ().text = sname + " build hotel: $" + this.GetComponent<SpaceLogicS> ().Gameboard [space].costPerHouse;
+			developSelected.GetComponent<Text> ().text = sname + " build hotel: $" + this.GetComponent<SpaceLogicS> ().Gameboard [space].costPerHouse;
 			houseOrHotel = "hotel";
 		} else {
-			redeemSelected.GetComponent<Text> ().text = sname + " is full";
+			developSelected.GetComponent<Text> ().text = sname + " is full";
 		}
 
-		redeemEngageButton.SetActive (true);
+		developEngageButton.SetActive (true);
 
 
-		redeemEngageButton.GetComponent<Button> ().onClick.RemoveAllListeners ();
+		developEngageButton.GetComponent<Button> ().onClick.RemoveAllListeners ();
 		//print ("I'm here");
 		//DO NOT ADD IF everything built
 			if (this.GetComponent<SpaceLogicS> ().Gameboard [space].numberOfHouses == 3 && this.GetComponent<SpaceLogicS> ().Gameboard [space].hotel)
-				redeemEngageButton.SetActive (false);
+			developEngageButton.SetActive (false);
 		//print ("and here");
-		redeemEngageButton.GetComponent<Button>().onClick.AddListener (() => {
-			CompleteRedeem(sname, price, space, houseOrHotel);
+		developEngageButton.GetComponent<Button>().onClick.AddListener (() => {
+			CompleteDevelop(sname, price, space, houseOrHotel);
 
 		});
 	
@@ -520,23 +531,23 @@ public class MainGameS : MonoBehaviour {
 
 
 
-	public void CompleteRedeem(string sname, float cost, int space, string horH){
+	public void CompleteDevelop(string sname, float cost, int space, string horH){
 
 		if (players [currentPlayer].money < cost) {
-			redeemSelected.GetComponent<Text> ().text = "Not enough money";
-			redeemEngageButton.GetComponent<Button> ().onClick.RemoveAllListeners ();
-			redeemEngageButton.SetActive (false);
+			developSelected.GetComponent<Text> ().text = "Not enough money";
+			developEngageButton.GetComponent<Button> ().onClick.RemoveAllListeners ();
+			developEngageButton.SetActive (false);
 		} else {
 			
 			if (horH == "house") {
-				redeemSelected.GetComponent<Text> ().text = "Built house on " + sname;
+				developSelected.GetComponent<Text> ().text = "Built house on " + sname;
 				this.GetComponent<SpaceLogicS> ().Gameboard [space].numberOfHouses++;
 
 
 			}
 
 			if (horH == "hotel") {
-				redeemSelected.GetComponent<Text> ().text = "Built hotel on " + sname;
+				developSelected.GetComponent<Text> ().text = "Built hotel on " + sname;
 				this.GetComponent<SpaceLogicS> ().Gameboard [space].hotel = true;
 
 
@@ -548,24 +559,151 @@ public class MainGameS : MonoBehaviour {
 			this.GetComponent<SpaceLogicS> ().Gameboard [space].ActivateVisuals ();
 			players [currentPlayer].money -= cost;
 			//redeemSelected.GetComponent<Text> ().text = "Success";
-			redeemEngageButton.GetComponent<Button> ().onClick.RemoveAllListeners ();
-			redeemEngageButton.SetActive (false);
+			developEngageButton.GetComponent<Button> ().onClick.RemoveAllListeners ();
+			developEngageButton.SetActive (false);
 			ListenerCleanup ();
 		}
 
 
 	}
 
+	// =========================================================TRADE==================================================
+
+
+	public void pushTradeButton(){
+
+		TurnOffTurnActions ();
+		tradeTitle.SetActive (true);
+		tradeText.SetActive (true);
+		goBackbutton.SetActive (true);
+
+		tradeTitle.GetComponent<Text> ().text = "Trade";
+		int count = -1;
+		foreach (Space space in this.GetComponent<SpaceLogicS>().Gameboard) {
+			count++;
+			if (players [currentPlayer].money > 0) {
+				if (space.owned == true && space.owner != currentPlayer) {
+					space.spaceSelectButton.GetComponent<Button> ().interactable = true;
+					//space.spaceSelectButton.GetComponent<Button> ().onClick.AddListener () = pushMortgageSelectButton (space.sName, space.costToBuy/2);
+					string x = space.sName;
+					int z = count;
+	
+					space.spaceSelectButton.GetComponent<Button> ().onClick.AddListener (() => {
+						pushTradeSelectButton (x, z);
+					});
+
+				} 
+
+			} else {
+				tradeText.SetActive (false);
+				tradeSelected.SetActive (true);
+				tradeSelected.GetComponent<Text> ().text = "You don't have any money to trade";
+
+
+			}
+		}
+
+	}
+
+
+	public void pushTradeSelectButton(string sname, int count)
+	{ 
+		tradeOffer = 0;
+		tradeOfferSlider.GetComponent<Slider> ().maxValue = players [currentPlayer].money;
+		tradeOfferSlider.SetActive (true);
+
+		tradeOfferText.SetActive (true);
+		tradeText.SetActive (false); 
+		tradeSelected.SetActive (true);
+		tradeSelected.GetComponent<Text> ().text = sname + " - " + "Offer:";
+		tradeInitiateButton.SetActive (true);
+
+
+		tradeInitiateButton.GetComponent<Button> ().onClick.RemoveAllListeners ();
+		tradeInitiateButton.GetComponent<Button>().onClick.AddListener (() => {
+			OfferTrade(sname, count );
+		});
+	}
+
+
+	public void OfferTrade(string sname, int count){
+		tradeOfferSlider.SetActive (false);
+		tradeOffer = tradeOfferSlider.GetComponent<Slider> ().value;
+		tradeOfferSlider.GetComponent<Slider> ().value = 0;
+		tradeOfferText.SetActive (false);
+		tradeOfferText.GetComponent<Text>().text="$0";
+		//tradeOffer = tradeOfferSlider.GetComponent<Slider> ().value;
+		tradeInitiateButton.SetActive (false);
+		tradeInitiateButton.GetComponent<Button> ().onClick.RemoveAllListeners ();
+		goBackbutton.SetActive (false);
+		tradeReject.SetActive (true);
+		tradeAccept.SetActive (true);
+		tradeSelected.SetActive (false);
+
+		tradeAccept.GetComponent<Button> ().onClick.RemoveAllListeners ();
+		tradeAccept.GetComponent<Button>().onClick.AddListener (() => {
+			AcceptTrade(sname, count );
+		});
+
+		tradeReject.GetComponent<Button> ().onClick.RemoveAllListeners ();
+		tradeReject.GetComponent<Button>().onClick.AddListener (() => {
+			RejectTrade(sname, count );
+		});
+
+		tradeText.SetActive (true);
+		tradeTitle.GetComponent<Text> ().text =string.Format ("P{0} Trade", (this.GetComponent<SpaceLogicS>().Gameboard[count].owner+1).ToString());
+
+		tradeText.GetComponent<Text> ().text =string.Format ("P{0} will trade ${1} for {2}", 
+			(currentPlayer+1).ToString(), tradeOffer.ToString(), sname);
+		
+
+	}
+
+	public void AcceptTrade(string sname, int count)
+	{
+		tradeReject.SetActive (false);
+		tradeAccept.SetActive (false);
+		goBackbutton.SetActive (true);
+		players [this.GetComponent<SpaceLogicS> ().Gameboard [count].owner].money += tradeOffer;
+		players [currentPlayer].money -= tradeOffer;
+		this.GetComponent<SpaceLogicS> ().Gameboard [count].owner = currentPlayer;
+
+		this.GetComponent<TokensS> ().ChangeOwnership (count, currentPlayer);
+
+		tradeSelected.SetActive (false);
+		tradeText.GetComponent<Text> ().text = string.Format ("Traded P{0} ${1} for {2}", (this.GetComponent<SpaceLogicS> ().Gameboard [count].owner + 1).ToString (), tradeOffer, sname);
+		
+		ListenerCleanup ();
+
+	}
+
+
+	public void RejectTrade(string sname, int count)
+	{
+		tradeReject.SetActive (false);
+		tradeAccept.SetActive (false);
+		goBackbutton.SetActive (true);
+		tradeText.GetComponent<Text> ().text = string.Format ("P{0} rejected your offed", (this.GetComponent<SpaceLogicS> ().Gameboard [count].owner + 1).ToString ());
+
+		ListenerCleanup ();
+	}
+
+
+	//===================================================================================================================================================================
 	public void pushGoBackButton(){
 		goBackbutton.SetActive (false);
 		mortgageText.SetActive (false);
 		mortgageTitle.SetActive (false);
 		mortgageSelected.SetActive (false);
 		mortgageEngageButton.SetActive (false);
-		redeemText.SetActive (false);
-		redeemTitle.SetActive (false);
-		redeemSelected.SetActive (false);
-		redeemEngageButton.SetActive (false);
+		developText.SetActive (false);
+		developTitle.SetActive (false);
+		developSelected.SetActive (false);
+		developEngageButton.SetActive (false);
+		tradeText.SetActive (false);
+		tradeTitle.SetActive (false);
+		tradeSelected.SetActive (false);
+		tradeInitiateButton.SetActive (false);
 		ListenerCleanup ();
 		foreach (Space space in this.GetComponent<SpaceLogicS>().Gameboard) {
 			space.spaceSelectButton.GetComponent<Button> ().interactable = false;
@@ -609,7 +747,7 @@ public class MainGameS : MonoBehaviour {
 			rollButton.SetActive (true);
 			tradeButton.SetActive (false);
 			mortgageButton.SetActive (false);
-			redeemButton.SetActive (false);
+			developButton.SetActive (false);
 			endTurnButton.SetActive (false);
 			rollButton.GetComponent<Button> ().interactable = true;
 		} else {
@@ -682,7 +820,7 @@ public class MainGameS : MonoBehaviour {
 		rollButton.SetActive (true);
 		tradeButton.SetActive (false);
 		mortgageButton.SetActive (false);
-		redeemButton.SetActive (false);
+		developButton.SetActive (false);
 		endTurnButton.SetActive (false);
 		rollButton.GetComponent<Button> ().interactable = true;
 
@@ -694,7 +832,7 @@ public class MainGameS : MonoBehaviour {
 		rollButton.SetActive (false);
 		tradeButton.SetActive (false);
 		mortgageButton.SetActive (false);
-		redeemButton.SetActive (false);
+		developButton.SetActive (false);
 		endTurnButton.SetActive (false);
 		int count = 0;
 

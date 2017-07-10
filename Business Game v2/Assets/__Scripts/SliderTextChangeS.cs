@@ -9,7 +9,7 @@ public class SliderTextChangeS : MonoBehaviour {
 
 	// Use this for initialization
 	void Start () {
-		slider = GameObject.Find ("Bid Slider");
+		//slider = GameObject.Find ("Bid Slider");
 
 		slider.GetComponent<Slider> ().onValueChanged.AddListener (delegate {
 			ValueChangeCheck ();
