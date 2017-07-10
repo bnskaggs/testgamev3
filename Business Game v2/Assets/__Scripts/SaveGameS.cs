@@ -13,9 +13,10 @@ public class SaveGameS : MonoBehaviour {
 
 	public void SaveTheGame(){
 		//string path = "Assets/Resources/savegame.txt";
-		string path = Application.persistentDataPath+"//"+"savegame.txt";
+		string path  = GameMasterS.saveLoadLocation2;
+		print("paht:"+ path);
 		//FileInfo f = new FileInfo (Application.persistentDataPath + "//" + "savegame.txt");
-		File.WriteAllText (@Application.persistentDataPath+"//"+"savegame.txt", string.Empty);
+		File.WriteAllText (@path,string.Empty );
 		StreamWriter sw = new StreamWriter (path,true);
 		sw.WriteLine (GameMasterS.level);
 		sw.WriteLine (GameMasterS.gameMode);

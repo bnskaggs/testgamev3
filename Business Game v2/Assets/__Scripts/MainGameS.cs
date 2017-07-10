@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using System.IO;
+using UnityEngine.SceneManagement;
 
 public class MainGameS : MonoBehaviour {
 
@@ -90,7 +91,7 @@ public class MainGameS : MonoBehaviour {
 
 	// Use this for initialization
 	void Start () {
-		savepath = Application.persistentDataPath+"//"+"savegame.txt";
+		savepath = GameMasterS.saveLoadLocation2;
 		rollButton = GameObject.Find ("Roll Button");
 		AssignMovementSpots();
 		AssignPlayers ();
@@ -1005,6 +1006,10 @@ public class MainGameS : MonoBehaviour {
 
 	}
 
+	public void xButton(){
+		SceneManager.LoadSceneAsync ("Scene_0_Start", LoadSceneMode.Single);
+
+	}
 
 
 }

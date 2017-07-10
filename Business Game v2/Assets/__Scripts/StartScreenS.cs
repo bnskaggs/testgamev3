@@ -15,9 +15,12 @@ public class StartScreenS : MonoBehaviour {
 	private List<string> rulesList = new List<string>();
 	private List<string> levelsList = new List<string>();
 
-	private string savepath = "Assets/Resources/savegame.txt";
+	private string savepath = GameMasterS.saveLoadLocation;
+	private string savepath2= GameMasterS.saveLoadLocation2;
 
 	public GameObject continueButton;
+
+	public GameObject testText;
 
 	// Use this for initialization
 	void Start () {
@@ -31,8 +34,10 @@ public class StartScreenS : MonoBehaviour {
 
 		levelsList.Add ("International");
 		levelsList.Add ("India");
+		Debug.Log (savepath);
+		testText.GetComponent<Text> ().text = GameMasterS.saveLoadLocation2;
 
-		if (File.Exists (savepath))
+		if (File.Exists (savepath2))
 			continueButton.GetComponent<Button> ().interactable = true;
 		else
 			continueButton.GetComponent<Button> ().interactable = false;
@@ -53,6 +58,7 @@ public class StartScreenS : MonoBehaviour {
 	}
 
 	public void OptionsButtonPushed(){
+
 		if (optionsPanel == null)
 			optionsPanel = GameObject.Find ("OptionsPanel");
 
@@ -73,10 +79,12 @@ public class StartScreenS : MonoBehaviour {
 
 		case "Mobile":
 			GameMasterS.gameMode = GameMasterS.MOBILE;
+		
 			break;
 
 		case "Board Game":
 			GameMasterS.gameMode = GameMasterS.BOARD;
+
 			break;
 
 		
@@ -110,7 +118,9 @@ public class StartScreenS : MonoBehaviour {
 	public void ContinueGamePushed(){
 		GameMasterS.continuingGame = true;
 		char[] seperators = { ',' };
-		StreamReader reader = new StreamReader(savepath);
+
+
+		StreamReader reader = new StreamReader(savepath2);
 		string cLevel = reader.ReadLine ();
 		string cMode = reader.ReadLine ();
 

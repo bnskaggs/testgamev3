@@ -42,12 +42,14 @@ public class SpaceLogicS : MonoBehaviour {
 
 	private bool changeOwners;
 
+
 	// Use this for initialization
 	void Start () {
-		savepath = Application.persistentDataPath+"//"+"savegame.txt";
+		savepath =   GameMasterS.saveLoadLocation;
 		AssignVisuals ();
 
 		//if (GameMasterS.level != GameMasterS.INTERN)
+		//StartCoroutine(GetSpaceData());
 			GetSpaceData ();
 		
 		/*	int count = -1;
@@ -73,7 +75,7 @@ public class SpaceLogicS : MonoBehaviour {
 		if (GameMasterS.level ==GameMasterS.INTERN)
 			mun = "$";
 		
-	
+
 
 
 		
@@ -84,48 +86,95 @@ public class SpaceLogicS : MonoBehaviour {
 		string path = null;
 		char[] seperators = { ',' };
 		char[] seperators2 = { '&' };
-
-		if(GameMasterS.level == GameMasterS.INDIA)
-			path = Application.streamingAssetsPath+"//"+"india.txt";
-		if(GameMasterS.level == GameMasterS.INTERN)
-			path = Application.streamingAssetsPath+"//"+"international.txt";
-		
-		StreamReader reader = new StreamReader(path); 
-
-		string headerLine = reader.ReadLine();
-		string numberOfSpaces = reader.ReadLine ();
-		//while(reader.Peek()>=0)
-			//print(reader.ReadLine());
-		for (int x = 0; x < int.Parse(numberOfSpaces);x++)
-		{
-			string data = reader.ReadLine ();
-			string[] spaceData = data.Split (seperators);
-
-			Gameboard [x].sName = spaceData [0];
-			SetSpaceType (spaceData [1],x);
-			Gameboard [x].costToBuy = float.Parse(spaceData [2]);
-			Gameboard [x].costToRent = float.Parse(spaceData [3]);
-			SetColorType (spaceData [4],x);
-			Gameboard [x].costPerHouse = float.Parse(spaceData [5]);
-			string[] houserent = spaceData [6].Split (seperators2);
-
-			Gameboard [x].costWithHouses = new float[3] {
-				float.Parse (houserent [0]),
-				float.Parse (houserent [1]),
-				float.Parse (houserent [2])
-			};
-			Gameboard [x].costPerHotel = float.Parse(spaceData [7]);
-			Gameboard [x].costWithHotel = float.Parse(spaceData [8]);
-
+		char[] seperators3 = { ';' };
+		//char[] seperators4 = { ',' };
+		TextAsset level = null;
+		if (GameMasterS.level == GameMasterS.INDIA) {
+			
+			//path = Path.Combine( Application.streamingAssetsPath,"India.txt");
+			level = Resources.Load<TextAsset> ("India") as TextAsset;
 		}
-		reader.Close();
+		if (GameMasterS.level == GameMasterS.INTERN) {
+			print ("intern");
+			//path = Path.Combine( Application.streamingAssetsPath,"International2.txt");
+			level = Resources.Load<TextAsset> ("International") as TextAsset;
+		}
+		/*if (path.Contains ("://")) {
+			WWW www = new WWW (path);
+			print ("here");
+			yield return www;
+			print ("andhere");
+			string result = www.text;
+			Debug.Log (result);
+
+		
+			string[] lineSplit = www.text.Split (seperators3);
+			string numberOfSpaces = lineSplit [1];
+			for (int x = 0; x < int.Parse (numberOfSpaces); x++) {
+				string[] spaceData = lineSplit[x].Split (seperators);
+
+				Gameboard [x].sName = spaceData [0];
+				SetSpaceType (spaceData [1], x);
+				Gameboard [x].costToBuy = float.Parse (spaceData [2]);
+				Gameboard [x].costToRent = float.Parse (spaceData [3]);
+				SetColorType (spaceData [4], x);
+				Gameboard [x].costPerHouse = float.Parse (spaceData [5]);
+				string[] houserent = spaceData [6].Split (seperators2);
+
+				Gameboard [x].costWithHouses = new float[3] {
+					float.Parse (houserent [0]),
+					float.Parse (houserent [1]),
+					float.Parse (houserent [2])
+				};
+				Gameboard [x].costPerHotel = float.Parse (spaceData [7]);
+				Gameboard [x].costWithHotel = float.Parse (spaceData [8]);
+
+
+
+			}
+
+
+
+		} else {*/
+		print (level);
+		if(level !=null)
+		{
+		StreamReader reader = new StreamReader (new MemoryStream(level.bytes)); 
+
+			string headerLine = reader.ReadLine ();
+			string numberOfSpaces = reader.ReadLine ();
+			//while(reader.Peek()>=0)
+			//print(reader.ReadLine());
+			for (int x = 0; x < int.Parse (numberOfSpaces); x++) {
+				string data = reader.ReadLine ();
+				string[] spaceData = data.Split (seperators);
+
+				Gameboard [x].sName = spaceData [0];
+				SetSpaceType (spaceData [1], x);
+				Gameboard [x].costToBuy = float.Parse (spaceData [2]);
+				Gameboard [x].costToRent = float.Parse (spaceData [3]);
+				SetColorType (spaceData [4], x);
+				Gameboard [x].costPerHouse = float.Parse (spaceData [5]);
+				string[] houserent = spaceData [6].Split (seperators2);
+
+				Gameboard [x].costWithHouses = new float[3] {
+					float.Parse (houserent [0]),
+					float.Parse (houserent [1]),
+					float.Parse (houserent [2])
+				};
+				Gameboard [x].costPerHotel = float.Parse (spaceData [7]);
+				Gameboard [x].costWithHotel = float.Parse (spaceData [8]);
+
+			}
+			reader.Close ();
+		}
 
 
 	}
 
 	public void LoadGameDataSecond()
 	{
-		savepath = Application.persistentDataPath+"//"+"savegame.txt";
+		savepath =   GameMasterS.saveLoadLocation2;
 		char[] seperators = { ',' };
 		char[] seperators2 = { '&' };
 		StreamReader reader = new StreamReader(savepath); 
