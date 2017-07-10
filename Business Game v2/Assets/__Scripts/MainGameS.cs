@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using System.IO;
 
 public class MainGameS : MonoBehaviour {
 
@@ -18,7 +19,7 @@ public class MainGameS : MonoBehaviour {
 
 	private int currentRoll;
 
-	private int currentPlayer;
+	public int currentPlayer;
 
 
 	public GameObject tradeButton;
@@ -77,6 +78,7 @@ public class MainGameS : MonoBehaviour {
 
 
 	public string mun;
+	private string savepath = "Assets/Resources/savegame.txt";
 
 
 	//NEW RULES
@@ -128,6 +130,10 @@ public class MainGameS : MonoBehaviour {
 			}
 
 		}
+
+		if (GameMasterS.continuingGame) {
+			LoadGameData ();
+		}
 				
 			
 		
@@ -174,6 +180,43 @@ public class MainGameS : MonoBehaviour {
 
 
 
+	}
+
+	public void LoadGameData(){
+		char[] seperators = { ',' };
+		StreamReader reader = new StreamReader(savepath);
+
+
+		string trash = reader.ReadLine ();
+		trash = reader.ReadLine ();
+		int realCurrentPlayer = int.Parse (reader.ReadLine ());
+		int numberOfPlayer = int.Parse(reader.ReadLine ());
+		for (int x = 0; x < numberOfPlayer; x++) {
+			string data = reader.ReadLine ();
+			string[] playerData = data.Split (seperators);
+			players [x].money = float.Parse(playerData [1]);
+			players [x].location = int.Parse(playerData [2]);
+			Teleport (x, players [x].location);
+			players [x].lostTurn = bool.Parse(playerData [3]);
+			players [x].lostTurnTime= int.Parse(playerData [4]);
+			players [x].jail=  bool.Parse(playerData [5]);
+			players [x].doNotCollectFromGo=  bool.Parse(playerData [6]);
+			players [x].inTheGame=  bool.Parse(playerData [7]);
+			if(players[x].inTheGame==false)
+			{
+				currentPlayer = x;
+				LoseButtonPushed ();
+			}
+
+		}
+
+
+		reader.Close ();
+
+		currentPlayer = realCurrentPlayer;
+
+		playerNotes [currentPlayer].GetComponent<Text> ().text = "Your Turn";
+		this.GetComponent<SpaceLogicS> ().LoadGameDataSecond ();
 	}
 	IEnumerator MovePlayer(){
 		int x = currentRoll;
@@ -228,6 +271,17 @@ public class MainGameS : MonoBehaviour {
 			iTween.MoveTo (players [y].playerObject, moveSpots [y,loc].transform.position, 0.5f);
 			
 			
+
+
+	}
+
+	public void Teleport(int player, int loc){
+
+
+
+		players [player].playerObject.transform.position = new Vector3 (moveSpots [player, loc].transform.position.x, moveSpots [player, loc].transform.position.y, moveSpots [player, loc].transform.position.z);
+
+
 
 
 	}

@@ -12,21 +12,25 @@ public class SaveGameS : MonoBehaviour {
 
 
 	public void SaveTheGame(){
-		string path = path = "Assets/Resources/savegame.txt";
-
-		StreamWriter sw = new StreamWriter (path, true);
+		string path = "Assets/Resources/savegame.txt";
+		File.WriteAllText (@"Assets/Resources/savegame.txt", string.Empty);
+		StreamWriter sw = new StreamWriter (path,true);
+		sw.WriteLine (GameMasterS.level);
+		sw.WriteLine (GameMasterS.gameMode);
+		sw.WriteLine (this.GetComponent<MainGameS> ().currentPlayer);
+		sw.WriteLine (this.GetComponent<MainGameS> ().players.Length);
 		foreach (Player player in this.GetComponent<MainGameS>().players) {
 			sw.WriteLine(string.Format("{0},{1},{2},{3},{4},{5},{6},{7}",
 				player.playerNumber,player.money,player.location,player.lostTurn,player.lostTurnTime,player.jail,player.doNotCollectFromGo,player.inTheGame));
 
 		}
-
+		sw.WriteLine (this.GetComponent<SpaceLogicS>().Gameboard.Length);
 		foreach (Space space in this.GetComponent<SpaceLogicS>().Gameboard) {
 			string boom = string.Format ("{0}&{1}&{2}", space.costWithHouses [0], space.costWithHouses [1], space.costWithHouses [2]);
 		
 
-			sw.WriteLine(string.Format("{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12}",
-				space.sName,space.type,space.owned,space.owner,space.costToBuy,space.costToRent,space.color,space.numberOfHouses,space.costPerHouse,boom,space.hotel,space.costWithHotel,space.isMortgaged));
+			sw.WriteLine(string.Format("{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12},{13}",
+				space.sName,space.type,space.owned,space.owner,space.costToBuy,space.costToRent,space.color,space.numberOfHouses,space.costPerHouse,boom,space.hotel,space.costWithHotel,space.isMortgaged, space.costPerHotel));
 		}
 
 		/*

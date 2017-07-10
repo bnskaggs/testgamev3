@@ -16,6 +16,8 @@ public class GameMasterS : MonoBehaviour {
 
 	public static string level;
 
+	public static bool continuingGame = false;
+
 	 
 
 

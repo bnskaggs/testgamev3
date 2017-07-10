@@ -38,6 +38,10 @@ public class SpaceLogicS : MonoBehaviour {
 	public int jailLoc;
 	//public GameObject[] hVisualHolders;
 
+	private string savepath = "Assets/Resources/savegame.txt";
+
+	private bool changeOwners;
+
 	// Use this for initialization
 	void Start () {
 
@@ -101,7 +105,7 @@ public class SpaceLogicS : MonoBehaviour {
 			SetSpaceType (spaceData [1],x);
 			Gameboard [x].costToBuy = float.Parse(spaceData [2]);
 			Gameboard [x].costToRent = float.Parse(spaceData [3]);
-			SetSpaceType (spaceData [4],x);
+			SetColorType (spaceData [4],x);
 			Gameboard [x].costPerHouse = float.Parse(spaceData [5]);
 			string[] houserent = spaceData [6].Split (seperators2);
 
@@ -115,6 +119,76 @@ public class SpaceLogicS : MonoBehaviour {
 
 		}
 		reader.Close();
+
+
+	}
+
+	public void LoadGameDataSecond()
+	{
+		char[] seperators = { ',' };
+		char[] seperators2 = { '&' };
+		StreamReader reader = new StreamReader(savepath); 
+
+		string trash = reader.ReadLine ();
+		trash = reader.ReadLine ();
+		trash = reader.ReadLine ();
+		int skip = int.Parse(reader.ReadLine ());
+		for (int x = 0; x < skip; x++) {
+			trash = reader.ReadLine ();
+		}
+		//print (reader.ReadLine ());
+		int numberOfSpaces = int.Parse(reader.ReadLine ());
+
+		for (int x = 0; x < numberOfSpaces; x++) {
+			string data = reader.ReadLine ();
+			string[] spaceData = data.Split (seperators);
+
+			Gameboard [x].sName = spaceData [0];
+			SetSpaceType (spaceData [1],x);
+			Gameboard [x].owned = bool.Parse (spaceData [2]);
+			Gameboard [x].owner = int.Parse (spaceData [3]);
+			Gameboard [x].costToBuy = float.Parse(spaceData [4]);
+			Gameboard [x].costToRent = float.Parse(spaceData [5]);
+			SetSpaceType (spaceData [6],x);
+			Gameboard [x].numberOfHouses = int.Parse (spaceData [7]);
+			Gameboard [x].costPerHouse = float.Parse(spaceData [8]);
+			string[] houserent = spaceData [9].Split (seperators2);
+			Gameboard [x].costWithHouses = new float[3] {
+				float.Parse (houserent [0]),
+				float.Parse (houserent [1]),
+				float.Parse (houserent [2])
+			};
+			Gameboard [x].hotel = bool.Parse (spaceData [10]);
+			Gameboard [x].costToRent = float.Parse(spaceData [11]);
+			Gameboard [x].isMortgaged = bool.Parse (spaceData [12]);
+			Gameboard[x].costPerHotel = float.Parse(spaceData [13]);
+		
+		}
+
+		reader.Close ();
+		changeOwners = true;
+		/*for (int x = 0; x < Gameboard.Length; x++) {
+			this.GetComponent<TokensS> ().ChangeOwnership (x, Gameboard [x].owner);
+			if (Gameboard [x].isMortgaged)
+				this.GetComponent<TokensS> ().ChangeMortgage (x, Gameboard [x].owner);
+
+		}*/
+
+	}
+
+	void Update(){
+		if (changeOwners) {
+			changeOwners = false;
+			for (int x = 0; x < Gameboard.Length; x++) {
+				this.GetComponent<TokensS> ().ChangeOwnership (x, Gameboard [x].owner);
+				if (Gameboard [x].isMortgaged)
+					this.GetComponent<TokensS> ().ChangeMortgage (x, Gameboard [x].owner);
+
+			}
+
+		}
+
+
 
 
 	}

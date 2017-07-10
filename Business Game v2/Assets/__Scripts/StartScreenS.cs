@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using System.IO;
 
 public class StartScreenS : MonoBehaviour {
 
@@ -14,10 +15,16 @@ public class StartScreenS : MonoBehaviour {
 	private List<string> rulesList = new List<string>();
 	private List<string> levelsList = new List<string>();
 
+	private string savepath = "Assets/Resources/savegame.txt";
+
+	public GameObject continueButton;
+
 	// Use this for initialization
 	void Start () {
 		optionsPanel = GameObject.Find ("OptionsPanel");
 		optionsPanel.SetActive (false);
+
+		continueButton= GameObject.Find ("ContinueGame");
 
 		rulesList.Add ("Mobile");
 		rulesList.Add ("Board Game");
@@ -25,6 +32,10 @@ public class StartScreenS : MonoBehaviour {
 		levelsList.Add ("International");
 		levelsList.Add ("India");
 
+		if (File.Exists (savepath))
+			continueButton.GetComponent<Button> ().interactable = true;
+		else
+			continueButton.GetComponent<Button> ().interactable = false;
 		
 	}
 	
@@ -35,6 +46,8 @@ public class StartScreenS : MonoBehaviour {
 
 	public void StartButtonPushed(){
 		SceneManager.LoadSceneAsync (levelToPlay, LoadSceneMode.Single);
+
+
 
 
 	}
@@ -91,6 +104,49 @@ public class StartScreenS : MonoBehaviour {
 
 
 
+
+	}
+
+	public void ContinueGamePushed(){
+		GameMasterS.continuingGame = true;
+		char[] seperators = { ',' };
+		StreamReader reader = new StreamReader(savepath);
+		string cLevel = reader.ReadLine ();
+		string cMode = reader.ReadLine ();
+
+
+		switch (cLevel) {
+
+		case GameMasterS.INTERN:
+			levelToPlay = "Scene_1_Game_Original";
+			GameMasterS.level = GameMasterS.INTERN;
+			break;
+
+		case GameMasterS.INDIA:
+			levelToPlay = "Scene_2_Game_NewBoard";
+			GameMasterS.level = GameMasterS.INDIA;
+			break;
+
+
+		}
+
+		switch (cMode) {
+
+		case GameMasterS.MOBILE:
+			GameMasterS.gameMode = GameMasterS.MOBILE;
+			break;
+
+		case GameMasterS.BOARD:
+			GameMasterS.gameMode = GameMasterS.BOARD;
+			break;
+
+
+		}
+
+
+
+		reader.Close ();
+		StartButtonPushed ();
 
 	}
 

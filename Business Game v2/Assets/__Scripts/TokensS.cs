@@ -30,6 +30,7 @@ public class TokensS : MonoBehaviour {
 	
 	// Update is called once per frame
 	public void ChangeOwnership(int space, int player){
+		
 		ownershipTokens [space].GetComponent<Renderer> ().enabled = true;
 
 
