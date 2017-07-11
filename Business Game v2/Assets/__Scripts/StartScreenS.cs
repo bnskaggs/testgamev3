@@ -35,7 +35,7 @@ public class StartScreenS : MonoBehaviour {
 		levelsList.Add ("International");
 		levelsList.Add ("India");
 		Debug.Log (savepath);
-		testText.GetComponent<Text> ().text = GameMasterS.saveLoadLocation2;
+		//testText.GetComponent<Text> ().text = GameMasterS.saveLoadLocation2;
 
 		if (File.Exists (savepath2))
 			continueButton.GetComponent<Button> ().interactable = true;

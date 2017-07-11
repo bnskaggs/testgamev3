@@ -15,6 +15,10 @@ public class TokensS : MonoBehaviour {
 	public Material p3MortMat;
 	public Material p4MortMat;
 
+	public Material p1SelectedMat;
+	public Material p2SelectedMat;
+	public Material p3SelectedMat;
+	public Material p4SelectedMat;
 
 
 	// Use this for initialization
@@ -136,4 +140,89 @@ public class TokensS : MonoBehaviour {
 
 		}
 	}
+
+
+
+
+
+
+
+
+	public void ChangeSelect(int space, int player){
+		//ownershipTokens [space].GetComponent<Renderer> ().enabled = true;
+
+
+		switch (player) {
+		case 0:
+
+			ownershipTokens [space].GetComponent<Renderer> ().material = p1MortMat;
+
+
+			break;
+
+		case 1:
+
+			ownershipTokens [space].GetComponent<Renderer> ().material = p2MortMat;
+
+
+			break;
+		case 2:
+
+			ownershipTokens [space].GetComponent<Renderer> ().material = p3MortMat;
+
+			break;
+
+		case 3:
+
+			ownershipTokens [space].GetComponent<Renderer> ().material =p4MortMat;
+
+			break;
+
+		case 666:
+			ownershipTokens [space].GetComponent<Renderer> ().enabled = false;
+			break;
+
+		}
+
+
+
+	}
+	public void ChangeUnselect(int space, int player){
+
+		switch (player) {
+		case 0:
+
+			ownershipTokens [space].GetComponent<Renderer> ().material = p1Mat;
+
+
+			break;
+
+		case 1:
+
+			ownershipTokens [space].GetComponent<Renderer> ().material = p2Mat;
+
+
+			break;
+		case 2:
+
+			ownershipTokens [space].GetComponent<Renderer> ().material = p3Mat;
+
+			break;
+
+		case 3:
+
+			ownershipTokens [space].GetComponent<Renderer> ().material = p4Mat;
+
+			break;
+
+		case 666:
+			ownershipTokens [space].GetComponent<Renderer> ().enabled = false;
+			break;
+
+
+		}
+	}
+
+
+
 }

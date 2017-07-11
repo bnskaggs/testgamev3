@@ -32,6 +32,7 @@ public class Space : MonoBehaviour {
 	public float costWithHotel;
 	public bool isMortgaged = false;
 	public GameObject spaceSelectButton;
+	public bool selected = false;
 
 
 	public GameObject hVisualHolder;
@@ -55,6 +56,11 @@ public class Space : MonoBehaviour {
 
 		foreach (GameObject visual in hVisuals)
 			visual.GetComponent<MeshRenderer> ().enabled = false;
+	}
+
+	public void SetSelected(bool things){
+		selected = things;
+
 	}
 
 

@@ -5,6 +5,7 @@ using UnityEngine.UI;
 using System.IO;
 using UnityEngine.SceneManagement;
 
+
 public class MainGameS : MonoBehaviour {
 
 	public GameObject rollNumberDisplay;
@@ -89,9 +90,40 @@ public class MainGameS : MonoBehaviour {
 	public GameObject doubleRollDisplay2;
 	public int doublesCount;
 
+	//Jail Rules
+	public GameObject jailRollButton;
+	public GameObject jailPayButton;
+	public GameObject jailOkayButton;
+	public GameObject turnIndicator;
+
+	//NEW TRADE
+	public GameObject[] playerButtons;
+	public GameObject tradeTitle2;
+	public GameObject tradePlayerText;
+	public GameObject tradeText2;
+
+	public GameObject tradeText3;
+	public GameObject tradeText4;
+	public GameObject tradeSelected2;
+	public GameObject tradeInitiateButton2;
+	public GameObject tradeOfferSlider2;
+	public GameObject tradeOfferText2;
+	public GameObject tradeAccept2;
+	public GameObject tradeReject2;
+	public GameObject tradeResult;
+	public float cashDesire;
+	public float cashOffer;
+	//offer display
+	public GameObject cashOfferDisplay;
+	public GameObject cashDesireDisplay;
+	public GameObject propOfferDisplay;
+	public GameObject propDesireDisplay;
+	//public GameObject tradeOfferFor;
+
 	// Use this for initialization
 	void Start () {
 		savepath = GameMasterS.saveLoadLocation2;
+		turnIndicator = GameObject.Find ("TurnIndicator");
 		rollButton = GameObject.Find ("Roll Button");
 		AssignMovementSpots();
 		AssignPlayers ();
@@ -215,6 +247,7 @@ public class MainGameS : MonoBehaviour {
 		reader.Close ();
 
 		currentPlayer = realCurrentPlayer;
+		turnIndicator.GetComponent<TurnIndicatorS> ().ChangePlayer (currentPlayer);
 
 		playerNotes [currentPlayer].GetComponent<Text> ().text = "Your Turn";
 		this.GetComponent<SpaceLogicS> ().LoadGameDataSecond ();
@@ -270,11 +303,14 @@ public class MainGameS : MonoBehaviour {
 		int y = currentPlayer; 
 
 			iTween.MoveTo (players [y].playerObject, moveSpots [y,loc].transform.position, 0.5f);
+		players [y].SetCurrentPos (loc);
 			
 			
 
 
 	}
+
+
 
 	public void Teleport(int player, int loc){
 
@@ -282,7 +318,7 @@ public class MainGameS : MonoBehaviour {
 
 		players [player].playerObject.transform.position = new Vector3 (moveSpots [player, loc].transform.position.x, moveSpots [player, loc].transform.position.y, moveSpots [player, loc].transform.position.z);
 
-
+		players [player].SetCurrentPos (loc);
 
 
 	}
@@ -341,6 +377,25 @@ public class MainGameS : MonoBehaviour {
 
 	}
 
+	public void MoveToJail(){
+		die1 = -1;
+		die2 = -3;
+		int jailspace = this.GetComponent<SpaceLogicS> ().jailLoc;
+		MovePlayerToLoc (jailspace);
+
+
+	}
+
+	public void MoveToRest(){
+		die1 = -1;
+		die2 = -3;
+		int restSpace = this.GetComponent<SpaceLogicS> ().restLoc;
+		MovePlayerToLoc (restSpace);
+
+
+	}
+
+
 	public void Reroll(){
 		rollButton.SetActive (true);
 		rollButton.GetComponent<Button> ().interactable = true;
@@ -356,7 +411,7 @@ public class MainGameS : MonoBehaviour {
 	}
 
 	public void TurnOnTurnActions(){
-		if (GameMasterS.gameMode == GameMasterS.BOARD && die1==die2) {
+		if (GameMasterS.gameMode == GameMasterS.BOARD && die1==die2&& !players[currentPlayer].lostTurn) {
 			Reroll ();
 
 		} else {
@@ -718,43 +773,266 @@ public class MainGameS : MonoBehaviour {
 
 
 	public void pushTradeButton(){
+		
+		if (GameMasterS.gameMode == GameMasterS.MOBILE) {
+			TurnOffTurnActions ();
+			tradeTitle.SetActive (true);
+			tradeText.SetActive (true);
+			goBackbutton.SetActive (true);
 
-		TurnOffTurnActions ();
-		tradeTitle.SetActive (true);
-		tradeText.SetActive (true);
-		goBackbutton.SetActive (true);
-
-		tradeTitle.GetComponent<Text> ().text = "Trade";
-		int count = -1;
-		foreach (Space space in this.GetComponent<SpaceLogicS>().Gameboard) {
-			count++;
-			if (players [currentPlayer].money > 0) {
-				if (space.owned == true && space.owner != currentPlayer) {
-					space.spaceSelectButton.GetComponent<Button> ().interactable = true;
-					//space.spaceSelectButton.GetComponent<Button> ().onClick.AddListener () = pushMortgageSelectButton (space.sName, space.costToBuy/2);
-					string x = space.sName;
-					int z = count;
+			tradeTitle.GetComponent<Text> ().text = "Trade";
+			int count = -1;
+			foreach (Space space in this.GetComponent<SpaceLogicS>().Gameboard) {
+				count++;
+				if (players [currentPlayer].money > 0) {
+					if (space.owned == true && space.owner != currentPlayer) {
+						space.spaceSelectButton.GetComponent<Button> ().interactable = true;
+						//space.spaceSelectButton.GetComponent<Button> ().onClick.AddListener () = pushMortgageSelectButton (space.sName, space.costToBuy/2);
+						string x = space.sName;
+						int z = count;
 	
-					space.spaceSelectButton.GetComponent<Button> ().onClick.AddListener (() => {
-						pushTradeSelectButton (x, z);
-					});
+						space.spaceSelectButton.GetComponent<Button> ().onClick.AddListener (() => {
+							pushTradeSelectButton (x, z);
+						});
 
-				} 
+					} 
 
-			} else {
-				tradeText.SetActive (false);
-				tradeSelected.SetActive (true);
-				tradeSelected.GetComponent<Text> ().text = "You don't have any money to trade";
+				} else {
+					tradeText.SetActive (false);
+					tradeSelected.SetActive (true);
+					tradeSelected.GetComponent<Text> ().text = "You don't have any money to trade";
+
+
+				}
+			}
+		}
+		if (GameMasterS.gameMode == GameMasterS.BOARD) {
+			TurnOffTurnActions ();
+			tradeTitle.SetActive (true);
+			tradePlayerText.SetActive (true);
+			goBackbutton.SetActive (true);
+
+			foreach (GameObject button in playerButtons)
+				button.GetComponent<Button> ().onClick.RemoveAllListeners ();
+			int y = 0;
+			for (int x = 0; x < 4; x++) {
+				if (x != currentPlayer & players [x].inTheGame) {
+					playerButtons [y].SetActive (true);
+					string z = x.ToString ();
+					playerButtons[y].GetComponent<Button> ().onClick.AddListener (() => {
+						setDesire (int.Parse(z));
+						});
+					playerButtons [y].GetComponentInChildren<Text> ().text = "P" + (x + 1).ToString ();
+					y++;
+				}
 
 
 			}
+
+
+
+
+	
 		}
 
 	}
 
+	public void setDesire(int enemy){
+		foreach (GameObject button in playerButtons)
+			button.SetActive (false);
+		int count = -1;
+		print ("enemy" + enemy.ToString());
+		foreach (Space space in this.GetComponent<SpaceLogicS>().Gameboard) {
+			count++;
+			if (space.owned == true && space.owner == enemy) {
+				space.spaceSelectButton.GetComponent<Button> ().interactable = true;
+				string x = space.sName;
+				int z = count;
+				space.spaceSelectButton.GetComponent<Button> ().onClick.AddListener (() => {
+					pushTradeSelectButton2 (x, z);
+				});
+			}
+		}
 
+		tradeOfferSlider2.SetActive (true);
+		tradePlayerText.SetActive (false);
+		tradeText2.SetActive (true);
+		tradeOfferSlider2.GetComponent<Slider> ().maxValue = players [enemy].money;
+		tradeOfferText2.SetActive (true);
+
+		tradeInitiateButton2.SetActive (true);
+		tradeInitiateButton2.GetComponentInChildren<Text> ().text = "Continue";
+		tradeInitiateButton2.GetComponent<Button> ().onClick.RemoveAllListeners ();
+		tradeInitiateButton2.GetComponent<Button> ().onClick.AddListener (() => {
+			SetOffer(enemy);
+		});
+
+	}
+
+	public void pushTradeSelectButton2(string sname, int count)
+	{
+		if (!this.GetComponent<SpaceLogicS> ().Gameboard [count].selected) {
+			//desireList.Add (count);
+			this.GetComponent<TokensS> ().ChangeSelect (count, this.GetComponent<SpaceLogicS> ().Gameboard [count].owner);
+			this.GetComponent<SpaceLogicS> ().Gameboard [count].SetSelected (true);
+
+		} else {
+			if (this.GetComponent<SpaceLogicS> ().Gameboard [count].selected) {
+				//desireList.
+				this.GetComponent<SpaceLogicS> ().Gameboard [count].SetSelected (false);
+				this.GetComponent<TokensS> ().ChangeUnselect (count, this.GetComponent<SpaceLogicS> ().Gameboard [count].owner);
+
+			}
+		}
+		
+
+
+	}
+
+	public void SetOffer(int enemy){
+		cashDesire = tradeOfferSlider2.GetComponent<Slider> ().value;
+		tradeOfferSlider2.GetComponent<Slider> ().maxValue = players [currentPlayer].money;
+		tradeOfferSlider2.GetComponent<Slider> ().value = 0;
+		tradeOfferText2.GetComponent<Text> ().text = 0.ToString();
+		tradeText3.SetActive (true);
+		tradeText2.SetActive (false);
+		ListenerCleanup ();
+		int count = -1;
+		foreach (Space space in this.GetComponent<SpaceLogicS>().Gameboard) {
+			count++;
+			if (space.owned == true && space.owner == currentPlayer) {
+				space.spaceSelectButton.GetComponent<Button> ().interactable = true;
+				string x = space.sName;
+				int z = count;
+				space.spaceSelectButton.GetComponent<Button> ().onClick.AddListener (() => {
+					pushTradeSelectButton2 (x, z);
+				});
+			}
+		}
+			tradeInitiateButton2.GetComponentInChildren<Text> ().text = "Initiate";
+			tradeInitiateButton2.GetComponent<Button> ().onClick.RemoveAllListeners ();
+		tradeInitiateButton2.GetComponent<Button> ().onClick.AddListener (() => {
+			InitiateTrade (enemy);
+		});
+
+
+
+	}
+
+	public void InitiateTrade(int enemy){
+		cashOffer = tradeOfferSlider2.GetComponent<Slider> ().value;
+		tradeText3.SetActive (false);
+		tradeOfferSlider2.SetActive (false);
+		tradeOfferText2.SetActive (false);
+		tradeInitiateButton2.SetActive (false);
+		//tradeOfferFor.SetActive (true);
+		goBackbutton.SetActive (false);
+
+		turnIndicator.GetComponent<TurnIndicatorS>().ChangeText(string.Format("P{0} Trade",enemy));
+
+		tradeText4.SetActive (true);
+
+		foreach (Space space in this.GetComponent<SpaceLogicS>().Gameboard) {
+			if(space.selected && space.owner == currentPlayer)
+				propOfferDisplay.SetActive(true);
+			if (space.selected && space.owner == enemy)
+				propDesireDisplay.SetActive(true);
+
+		}
+
+		if (cashOffer != 0) {
+			cashOfferDisplay.SetActive (true);
+			cashOfferDisplay.GetComponent<Text> ().text = string.Format ("Their {0}{1}", mun, cashOffer);
+		}
+
+		if (cashDesire != 0) {
+			cashDesireDisplay.SetActive (true);
+			cashDesireDisplay.GetComponent<Text> ().text = string.Format ("Your {0}{1}", mun, cashDesire);
+		}
+
+		tradeAccept2.GetComponent<Button> ().onClick.RemoveAllListeners ();
+		tradeReject2.GetComponent<Button> ().onClick.RemoveAllListeners ();
+		tradeAccept2.SetActive (true);
+		tradeReject2.SetActive (true);
+
+		tradeAccept2.GetComponent<Button> ().onClick.AddListener (() => {
+			AcceptTrade2 (enemy);
+		});
+
+		tradeReject2.GetComponent<Button> ().onClick.AddListener (() => {
+			RejectTrade2 (enemy);
+		});
+
+			
+
+	}
+
+	void AcceptTrade2(int enemy){
+		//tradeOfferFor.SetActive (false);
+		tradeAccept2.SetActive (false);
+		tradeReject2.SetActive (false);
+		cashOfferDisplay.SetActive (false);
+		cashDesireDisplay.SetActive (false);
+		tradeText4.SetActive (false);
+		propDesireDisplay.SetActive(false);
+		propOfferDisplay.SetActive(false);
+
+		players [enemy].money += cashOffer;
+		players [enemy].money -= cashDesire;
+
+		players [currentPlayer].money += cashDesire;
+		players [currentPlayer].money -= cashOffer;
+		int count = -1;
+		foreach (Space space in this.GetComponent<SpaceLogicS>().Gameboard) {
+			count++;
+			if (space.selected && space.owner == currentPlayer) {
+				this.GetComponent<SpaceLogicS> ().Gameboard [count].selected = false;
+				this.GetComponent<TokensS> ().ChangeUnselect (count, this.GetComponent<SpaceLogicS> ().Gameboard [count].owner);
+				this.GetComponent<TokensS> ().ChangeOwnership(count, enemy);
+				space.owner = enemy;
+			} else {
+				if (space.selected && space.owner == enemy) {
+					this.GetComponent<SpaceLogicS> ().Gameboard [count].selected = false;
+					this.GetComponent<TokensS> ().ChangeUnselect (count, this.GetComponent<SpaceLogicS> ().Gameboard [count].owner);
+					this.GetComponent<TokensS> ().ChangeOwnership(count, currentPlayer);
+					space.owner = currentPlayer;
+				}
+			}
+
+		}
+		ListenerCleanup ();
+		goBackbutton.SetActive (true);
+		tradeResult.GetComponent<Text> ().text = "Trade Success!";
+		tradeResult.SetActive (true);
+
+		turnIndicator.GetComponent<TurnIndicatorS> ().ChangePlayer (currentPlayer);
+
+
+
+	}
+	void RejectTrade2(int enemy){
+		tradeAccept2.SetActive (false);
+		tradeReject2.SetActive (false);
+		cashOfferDisplay.SetActive (false);
+		cashDesireDisplay.SetActive (false);
+		tradeText4.SetActive (false);
+		propDesireDisplay.SetActive(false);
+		propOfferDisplay.SetActive(false);
+		int count = -1;
+		foreach (Space space in this.GetComponent<SpaceLogicS>().Gameboard) {
+			count++;
+			this.GetComponent<SpaceLogicS> ().Gameboard [count].selected = false;
+		}
+		ListenerCleanup ();
+		goBackbutton.SetActive (true);
+		tradeResult.GetComponent<Text> ().text = "Trade Rejected";
+		tradeResult.SetActive (true);
+
+
+	}
 	public void pushTradeSelectButton(string sname, int count)
 	{ 
+		
 		tradeOffer = 0;
 		tradeOfferSlider.GetComponent<Slider> ().maxValue = players [currentPlayer].money;
 		tradeOfferSlider.SetActive (true);
@@ -851,6 +1129,22 @@ public class MainGameS : MonoBehaviour {
 		tradeTitle.SetActive (false);
 		tradeSelected.SetActive (false);
 		tradeInitiateButton.SetActive (false);
+
+		tradeTitle2.SetActive (false);
+		tradePlayerText.SetActive (false);
+		tradeText2.SetActive (false);
+
+		tradeText3.SetActive (false);
+		tradeText4.SetActive (false);
+		tradeSelected2.SetActive (false);
+		tradeInitiateButton2.SetActive (false);
+		tradeOfferSlider2.SetActive (false);
+		tradeOfferText2.SetActive (false);
+		foreach (GameObject button in playerButtons)
+			button.SetActive (false);
+		tradeResult.SetActive (false);
+
+
 		ListenerCleanup ();
 		foreach (Space space in this.GetComponent<SpaceLogicS>().Gameboard) {
 			space.spaceSelectButton.GetComponent<Button> ().interactable = false;
@@ -876,7 +1170,8 @@ public class MainGameS : MonoBehaviour {
 					currentPlayer = 0;
 				
 				
-				if (players [currentPlayer].lostTurn) {
+				if (players [currentPlayer].lostTurn &&!players [currentPlayer].jail ) {
+					print("lostturn:"+players [currentPlayer].lostTurn+players [currentPlayer].lostTurnTime);
 					players [currentPlayer].lostTurnTime--;
 					if (players [currentPlayer].lostTurnTime == 1)
 						playerNotes [currentPlayer].GetComponent<Text> ().text = "Lost Turns: 1";
@@ -885,19 +1180,37 @@ public class MainGameS : MonoBehaviour {
 						flag = true;
 						playerNotes [currentPlayer].GetComponent<Text> ().text = "";
 					}
-
-				}	
+					flag=true;
+				}
+				print(currentPlayer.ToString() + players [currentPlayer].inTheGame + flag);
 			} while (flag == true || players [currentPlayer].inTheGame == false);
 
+			if (players [currentPlayer].jail) {
+				players [currentPlayer].lostTurnTime--;
+				if (players [currentPlayer].lostTurnTime > 0) {
+					turnIndicator.GetComponent<TurnIndicatorS> ().ChangePlayer (currentPlayer);
+					playerNotes [currentPlayer].GetComponent<Text> ().text = "Lost Turns: " + players [currentPlayer].lostTurnTime;
+					DisplayJailActions ();
+				}
+				else {
+					if (players [currentPlayer].lostTurnTime == 0) {
+						playerNotes [currentPlayer].GetComponent<Text> ().text = "";
+						players [currentPlayer].jail = false;
+					}
+				}
+			}
 
-			playerNotes [currentPlayer].GetComponent<Text> ().text = "Your Turn";
-			rollButton.SetActive (true);
-			tradeButton.SetActive (false);
-			mortgageButton.SetActive (false);
-			developButton.SetActive (false);
-			endTurnButton.SetActive (false);
-			this.GetComponent<SaveGameS> ().SaveTheGame ();
-			rollButton.GetComponent<Button> ().interactable = true;
+			if (!players [currentPlayer].jail) {
+				turnIndicator.GetComponent<TurnIndicatorS> ().ChangePlayer (currentPlayer);
+				playerNotes [currentPlayer].GetComponent<Text> ().text = "Your Turn";
+				rollButton.SetActive (true);
+				tradeButton.SetActive (false);
+				mortgageButton.SetActive (false);
+				developButton.SetActive (false);
+				endTurnButton.SetActive (false);
+				this.GetComponent<SaveGameS> ().SaveTheGame ();
+				rollButton.GetComponent<Button> ().interactable = true;
+			}
 
 		} else {
 			youLoseDialog.SetActive (true);
@@ -906,11 +1219,74 @@ public class MainGameS : MonoBehaviour {
 		doublesCount = 0;
 
 	}
+
+	public void DisplayJailActions(){
+		TurnOffTurnActions ();
+		this.GetComponent<SpaceLogicS> ().spaceTitle.SetActive (true);
+		this.GetComponent<SpaceLogicS> ().spaceTitle.GetComponent<Text> ().text = "Jail Actions";
+		jailPayButton.SetActive (true);
+		jailPayButton.GetComponentInChildren<Text> ().text = string.Format ("Pay {0}", mun);
+		jailRollButton.SetActive (true);
+	
+	}
+
+	public void JailRollButtonPush(){
+		DiceRoll ();
+		doubleRollDisplay1.GetComponent<Text> ().enabled = true;
+		doubleRollDisplay1.GetComponent<Text> ().text = die1.ToString ();
+
+		doubleRollDisplay2.GetComponent<Text> ().enabled = true;
+		doubleRollDisplay2.GetComponent<Text> ().text = die2.ToString ();
+
+
+		if (die1 == die2) {
+			this.GetComponent<SpaceLogicS> ().spaceTitle.GetComponent<Text> ().text = "Out Of Jail";
+			players [currentPlayer].jail = false;
+			players [currentPlayer].lostTurn = false;
+			players [currentPlayer].lostTurnTime = 0;
+			jailOkayButton.SetActive (true);
+
+		} else {
+			this.GetComponent<SpaceLogicS> ().spaceTitle.GetComponent<Text> ().text = "Still in Jail";
+			this.GetComponent<SpaceLogicS> ().oKButton.SetActive (true);
+
+		}
+
+
+	}
+
+	public void JailPayButtonPush(){
+		players [currentPlayer].money -= 500;
+		players [currentPlayer].jail = false;
+		players [currentPlayer].lostTurn = false;
+		players [currentPlayer].lostTurnTime = 0;
+		jailPayButton.SetActive (false);
+		jailRollButton.SetActive (false);
+		this.GetComponent<SpaceLogicS> ().spaceTitle.GetComponent<Text> ().text = "Out of Jail!";
+		this.GetComponent<SpaceLogicS> ().spaceText.GetComponent<Text> ().text = "Paid! Move again next turn";
+		playerNotes [currentPlayer].GetComponent<Text> ().text = "";
+		this.GetComponent<SpaceLogicS> ().oKButton.SetActive (true);
+
+
+	}
+
+	public void jailOkayButtonPush(){
+		doubleRollDisplay1.GetComponent<Text> ().enabled = false;
+		doubleRollDisplay2.GetComponent<Text> ().enabled = false;
+
+		jailOkayButton.SetActive (false);
+		this.GetComponent<SpaceLogicS> ().spaceText.GetComponent<Text> ().text = "Escaped! Move again next turn";
+		playerNotes [currentPlayer].GetComponent<Text> ().text = "";
+		this.GetComponent<SpaceLogicS> ().oKButton.SetActive (true);
+
+
+	}
 		
 	public void LoseButtonPushed(){
 		youLoseDialog.SetActive (false);
 		players [currentPlayer].inTheGame = false;
-
+		jailPayButton.SetActive (false);
+		jailRollButton.SetActive (false);
 		GameObject.Find ("Player " + (currentPlayer + 1).ToString ()).SetActive (false);
 		GameObject.Find ("Player" + (currentPlayer + 1).ToString () + "_Object").SetActive (false);
 		loseCount++;

@@ -18,6 +18,7 @@ public class SpaceLogicS : MonoBehaviour {
 	public GameObject setBidButton;
 	public GameObject bidText;
 	public GameObject bidSlider;
+	public GameObject chancecommunityOkayButton;
 
 
 	public Space[] Gameboard;
@@ -36,15 +37,20 @@ public class SpaceLogicS : MonoBehaviour {
 
 	private string mun;
 	public int jailLoc;
+	public int restLoc;
 	//public GameObject[] hVisualHolders;
 
 	private string savepath;
 
 	private bool changeOwners;
+	private bool chanceJail=false;
+	private bool chanceRest=false;
+	public bool eventHappened=false;
 
 
 	// Use this for initialization
 	void Start () {
+		
 		savepath =   GameMasterS.saveLoadLocation;
 		AssignVisuals ();
 
@@ -277,6 +283,7 @@ public class SpaceLogicS : MonoBehaviour {
 			Gameboard [count].type = spaceType.club;
 			break;
 		case "rest":
+			restLoc = count;
 			Gameboard [count].type = spaceType.rest;
 			break;
 
@@ -504,21 +511,30 @@ public class SpaceLogicS : MonoBehaviour {
 
 	public float CalculateRent()
 	{
-		//float rentMoney = 0;
+		float rentMoney = 0;
 
 		print ("calculating rent");
 
 		if (Gameboard [currentSpace].type == spaceType.utility)
-			return(CalculateUtilityCost());
+			rentMoney = CalculateUtilityCost ();
+		else {
+			if (Gameboard [currentSpace].hotel)
+				rentMoney = Gameboard [currentSpace].costWithHotel;
+			else {
 
-		if (Gameboard [currentSpace].hotel)
-			return Gameboard [currentSpace].costWithHotel;
-
-		if (Gameboard[currentSpace].numberOfHouses>0)
-			return Gameboard[currentSpace].costWithHouses[Gameboard[currentSpace].numberOfHouses-1];
+				if (Gameboard [currentSpace].numberOfHouses > 0)
+					rentMoney = Gameboard [currentSpace].costWithHouses [Gameboard [currentSpace].numberOfHouses - 1];
+				else {
+					rentMoney = Gameboard[currentSpace].costToRent;
+				}
+			}
+		}
 				
 
-		return Gameboard[currentSpace].costToRent;
+		if (GameMasterS.gameMode == GameMasterS.BOARD)
+			rentMoney /= 2;
+
+		return rentMoney;
 	}
 
 	public float CalculateUtilityCost(){
@@ -587,22 +603,37 @@ public class SpaceLogicS : MonoBehaviour {
 
 	void jailSpace()
 	{
-		if (currentRoll < 5) {
+		if (GameMasterS.gameMode == GameMasterS.MOBILE) {
+			if (currentRoll < 5) {
 			
-			this.GetComponent<MainGameS>().players [currentPlayer].lostTurn = true;
-			this.GetComponent<MainGameS>().players[currentPlayer].lostTurnTime = 2;
+				this.GetComponent<MainGameS> ().players [currentPlayer].lostTurn = true;
+				this.GetComponent<MainGameS> ().players [currentPlayer].lostTurnTime = 2;
+				spaceTitle.GetComponent<Text> ().text = "Jail";
+				spaceTitle.SetActive (true);
+				spaceText.GetComponent<Text> ().text = "Lose 2 Turns";
+				this.GetComponent<MainGameS> ().playerNotes [currentPlayer].GetComponent<Text> ().text = "Lost Turns: 2";
+				spaceText.SetActive (true);
+				oKButton.SetActive (true);
+			} else {
+				spaceTitle.GetComponent<Text> ().text = "Jail";
+				spaceTitle.SetActive (true);
+				spaceText.GetComponent<Text> ().text = "Passing By";
+				spaceText.SetActive (true);
+				oKButton.SetActive (true);
+			}
+		}
+		if (GameMasterS.gameMode == GameMasterS.BOARD) {
+			this.GetComponent<MainGameS> ().players [currentPlayer].lostTurn = true;
+			this.GetComponent<MainGameS> ().players [currentPlayer].lostTurnTime = 3;
 			spaceTitle.GetComponent<Text> ().text = "Jail";
+			this.GetComponent<MainGameS> ().players [currentPlayer].jail = true;
 			spaceTitle.SetActive (true);
-			spaceText.GetComponent<Text> ().text = "Lose 2 Turns";
-			this.GetComponent<MainGameS> ().playerNotes [currentPlayer].GetComponent<Text> ().text = "Lost Turns: 2";
+			spaceText.GetComponent<Text> ().text = "In Jail for 3 turns";
+			this.GetComponent<MainGameS> ().playerNotes [currentPlayer].GetComponent<Text> ().text = "In Jail: 3 ";
 			spaceText.SetActive (true);
 			oKButton.SetActive (true);
-		} else {
-			spaceTitle.GetComponent<Text> ().text = "Jail";
-			spaceTitle.SetActive (true);
-			spaceText.GetComponent<Text> ().text = "Passing By";
-			spaceText.SetActive (true);
-			oKButton.SetActive (true);
+
+
 		}
 		
 
@@ -610,10 +641,16 @@ public class SpaceLogicS : MonoBehaviour {
 
 	public void GoToJail(){
 		currentRoll = 0;
+
+
 		jailSpace ();
 		//Display reason for jail
 
 
+	}
+	public void GoToRest(){
+		currentRoll = 0;
+		restSpace ();
 	}
 
 	void restSpace()
@@ -654,23 +691,123 @@ public class SpaceLogicS : MonoBehaviour {
 
 	void chanceSpace()
 	{
-		int chance = Random.Range (1, 3);
+		if (GameMasterS.gameMode == GameMasterS.MOBILE) {
+			int chance = Random.Range (1, 3);
 
-		if (chance == 1) {
+			if (chance == 1) {
 			
-			spaceTitle.GetComponent<Text> ().text = "ReRoll!";
+				spaceTitle.GetComponent<Text> ().text = "ReRoll!";
+				spaceTitle.SetActive (true);
+
+				this.GetComponent<MainGameS> ().Reroll ();
+			} else {
+				spaceTitle.GetComponent<Text> ().text = "Double Move!";
+				spaceTitle.SetActive (true);
+
+				this.GetComponent<MainGameS> ().DoubleMove ();
+			
+
+			}
+		}
+		if (GameMasterS.gameMode == GameMasterS.BOARD) {
+			spaceTitle.GetComponent<Text> ().text = "Chance";
 			spaceTitle.SetActive (true);
 
-			this.GetComponent<MainGameS> ().Reroll ();
-		} else {
-			spaceTitle.GetComponent<Text> ().text = "Double Move!";
-			spaceTitle.SetActive (true);
+			print (currentRoll);
 
-			this.GetComponent<MainGameS> ().DoubleMove ();
-			
+			switch (currentRoll) {
+			case 2:
+				spaceText.GetComponent<Text> ().text = string.Format ("Lost {0}2000 in share market", mun);
+				this.GetComponent<MainGameS> ().players [currentPlayer].money -= 2000;
+				break;
+			case 3:
+				spaceText.GetComponent<Text> ().text = string.Format ("Lottery Prize of {0}2500", mun);
+				this.GetComponent<MainGameS> ().players [currentPlayer].money += 2500;
+				break;
+			case 4:
+				spaceText.GetComponent<Text> ().text = string.Format ("Fined {0}1000 for drunk driving", mun);
+				this.GetComponent<MainGameS> ().players [currentPlayer].money -= 1000;
+				break;
+			case 5:
+				spaceText.GetComponent<Text> ().text = string.Format ("Won {0}1000 at Crossword Competition", mun);
+				this.GetComponent<MainGameS> ().players [currentPlayer].money += 1000;
+				break;
+			case 6:
+				spaceText.GetComponent<Text> ().text = string.Format ("House Repair, lose {0}1000", mun);
+				this.GetComponent<MainGameS> ().players [currentPlayer].money -= 1500;
+				break;
+			case 7:
+				spaceText.GetComponent<Text> ().text = string.Format ("Won Jackpot of {0}2000!", mun);
+				this.GetComponent<MainGameS> ().players [currentPlayer].money += 2000;
+				break;
+			case 8:
+				spaceText.GetComponent<Text> ().text = string.Format ("Fire! Pay {0}3000 for damage", mun);
+				this.GetComponent<MainGameS> ().players [currentPlayer].money -= 3000;
+				break;
+			case 9:
+				spaceText.GetComponent<Text> ().text = string.Format ("Inheritance! Recieve {0}4000", mun);
+				this.GetComponent<MainGameS> ().players [currentPlayer].money += 3000;
+				break;
+			case 10:
+				spaceText.GetComponent<Text> ().text = string.Format ("Go to Jail!");
+				chanceJail = true;
+				break;
+			case 11:
+				spaceText.GetComponent<Text> ().text = string.Format ("Prize for best performance! Receive {0}3000 ", mun);
+				this.GetComponent<MainGameS> ().players [currentPlayer].money += 3000;
+				break;
+			case 12:
+
+				spaceText.GetComponent<Text> ().text = string.Format ("Go to {0} and lose turn", Gameboard [restLoc].sName);
+				chanceRest = true;
+				break;
+
+			}
+
+			spaceText.SetActive (true);
+			chancecommunityOkayButton.SetActive (true);
+
 
 		}
+
 	}
+
+	public void ChanceCommunityOkayPushed(){
+		chancecommunityOkayButton.SetActive (false);
+		spaceText.SetActive (false);
+		spaceTitle.SetActive (false);
+		print ("rest"+ chanceRest);
+
+		if (chanceJail) {
+			chanceJail = false;
+			GoToJail ();
+			eventHappened = true;
+			this.GetComponent<MainGameS> ().MoveToJail ();
+		} else {
+			if (chanceRest) {
+				chanceRest = false;
+				eventHappened = true;
+				this.GetComponent<MainGameS>().players [currentPlayer].lostTurn = true;
+				this.GetComponent<MainGameS>().players[currentPlayer].lostTurnTime = 1;
+				this.GetComponent<MainGameS> ().playerNotes [currentPlayer].GetComponent<Text> ().text = "Lost Turns: 1";
+				restSpace ();
+				this.GetComponent<MainGameS> ().MoveToRest ();
+
+
+			}
+			else{
+				oKButton.SetActive (false);
+				spaceText.SetActive (false);
+				spaceTitle.SetActive (false);
+
+				this.GetComponent<MainGameS> ().TurnOnTurnActions ();
+
+
+
+			}
+		}
+		}
+
 
 	void startSpace()
 	{
@@ -680,13 +817,100 @@ public class SpaceLogicS : MonoBehaviour {
 
 	void communitySpace()
 	{
-		this.GetComponent<MainGameS>().players [currentPlayer].money -= 500;
-		spaceTitle.GetComponent<Text> ().text = "Community";
-		spaceTitle.SetActive (true);
-		spaceText.GetComponent<Text> ().text = "-"+mun+"500";
-		spaceText.SetActive (true);
-		oKButton.SetActive (true);
+		if (GameMasterS.gameMode == GameMasterS.MOBILE) {
+			this.GetComponent<MainGameS> ().players [currentPlayer].money -= 500;
+			spaceTitle.GetComponent<Text> ().text = "Community";
+			spaceTitle.SetActive (true);
+			spaceText.GetComponent<Text> ().text = "-" + mun + "500";
+			spaceText.SetActive (true);
+			oKButton.SetActive (true);
+		}
 
+
+		if (GameMasterS.gameMode == GameMasterS.BOARD) {
+			spaceTitle.GetComponent<Text> ().text = "Community Chest";
+			spaceTitle.SetActive (true);
+
+			print (currentRoll);
+
+			switch (currentRoll) {
+			case 2:
+				spaceText.GetComponent<Text> ().text = string.Format ("Birthday! Get {0}500 from each player", mun);
+				int count;
+				int x = 0;
+				for (count=0; count < 4; count++) {
+					if (this.GetComponent<MainGameS> ().players [count].inTheGame && count != currentPlayer) {
+						x++;
+						this.GetComponent<MainGameS> ().players [count].money -= 500;
+					}
+
+				}
+
+				this.GetComponent<MainGameS> ().players [currentPlayer].money += 500*x;
+
+				break;
+			case 3:
+				spaceText.GetComponent<Text> ().text = string.Format ("Go to Jail!");
+				chanceJail = true;
+				break;
+			case 4:
+				spaceText.GetComponent<Text> ().text = string.Format ("Reality TV Prize! Get {0}2500", mun);
+				this.GetComponent<MainGameS> ().players [currentPlayer].money += 2500;
+				break;
+			case 5:
+				spaceText.GetComponent<Text> ().text = string.Format ("Medical Fees, lose {0}1000", mun);
+				this.GetComponent<MainGameS> ().players [currentPlayer].money -= 1000;
+				break;
+			case 6:
+				spaceText.GetComponent<Text> ().text = string.Format ("Income Tax Refund! Get {0}2000", mun);
+				this.GetComponent<MainGameS> ().players [currentPlayer].money += 2000;
+				break;
+			case 7:
+				spaceText.GetComponent<Text> ().text = string.Format ("Marriage Celebration, Pay {0}2000", mun);
+				this.GetComponent<MainGameS> ().players [currentPlayer].money -= 2000;
+				break;
+			case 8:
+				spaceText.GetComponent<Text> ().text = string.Format ("Go to {0} and lose turn", Gameboard [restLoc].sName);
+				chanceRest = true;
+				break;
+			case 9:
+				float repairCost = 0;
+				int houseCount = 0;
+				int hotelCount = 0;
+				foreach (Space space in Gameboard) {
+					if (space.owner == currentPlayer) {
+						houseCount += space.numberOfHouses;
+						if (space.hotel)
+							hotelCount++;
+					}
+
+				}
+				repairCost = (100 * hotelCount) + (50 * houseCount);
+
+
+				spaceText.GetComponent<Text> ().text = string.Format ("Property Repair, paid {0}{1}", mun,repairCost);
+				this.GetComponent<MainGameS> ().players [currentPlayer].money -= repairCost;
+				break;
+			case 10:
+				spaceText.GetComponent<Text> ().text = string.Format ("Interest on Stocks, get {0}1500", mun);
+				this.GetComponent<MainGameS> ().players [currentPlayer].money += 1500;
+				break;
+			case 11:
+				spaceText.GetComponent<Text> ().text = string.Format ("Pay Insurance Premium of {0}1500 ", mun);
+				this.GetComponent<MainGameS> ().players [currentPlayer].money -= 3000;
+				break;
+			case 12:
+				spaceText.GetComponent<Text> ().text = string.Format ("Sell Stocks, get {0}3000", mun);
+				this.GetComponent<MainGameS> ().players [currentPlayer].money += 3000;
+				break;
+
+			}
+
+			spaceText.SetActive (true);
+			chancecommunityOkayButton.SetActive (true);
+
+
+		}
 	}
 
 	void clubSpace()
@@ -733,6 +957,7 @@ public class SpaceLogicS : MonoBehaviour {
 		spaceTitle.SetActive (false);
 
 		this.GetComponent<MainGameS> ().TurnOnTurnActions ();
+		eventHappened = false;
 
 
 
