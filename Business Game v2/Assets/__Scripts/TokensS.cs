@@ -5,20 +5,20 @@ using UnityEngine;
 public class TokensS : MonoBehaviour {
 	public GameObject[] ownershipTokens;
 
-	public Material p1Mat;
-	public Material p2Mat;
-	public Material p3Mat;
-	public Material p4Mat;
+	public Material redMat;
+	public Material blueMat;
+	public Material greenMat;
+	public Material yellowMat;
 
-	public Material p1MortMat;
-	public Material p2MortMat;
-	public Material p3MortMat;
-	public Material p4MortMat;
+	public Material redMortMat;
+	public Material blueMortMat;
+	public Material greenMortMat;
+	public Material yellowMortMat;
 
-	public Material p1SelectedMat;
-	public Material p2SelectedMat;
-	public Material p3SelectedMat;
-	public Material p4SelectedMat;
+	public Material redSelectedMat;
+	public Material blueSelectedMat;
+	public Material greenSelectedMat;
+	public Material yellowSelectedMat;
 
 
 	// Use this for initialization
@@ -37,27 +37,28 @@ public class TokensS : MonoBehaviour {
 		
 		ownershipTokens [space].GetComponent<Renderer> ().enabled = true;
 
-
-		switch (player) {
-		case 0:
-			ownershipTokens [space].GetComponent<Renderer> ().material = p1Mat;
-			break;
-
-		case 1:
-			ownershipTokens [space].GetComponent<Renderer> ().material = p2Mat;
-			break;
-
-		case 2:
-			ownershipTokens [space].GetComponent<Renderer> ().material = p3Mat;
-			break;
-
-		case 3:
-			ownershipTokens [space].GetComponent<Renderer> ().material = p4Mat;
-			break;
-		case 666:
+		if (player == 666)
 			ownershipTokens [space].GetComponent<Renderer> ().enabled = false;
-			break;
+		else {
 
+			switch (this.GetComponent<MainGameS>().players[player].color) {
+			case "red":
+				ownershipTokens [space].GetComponent<Renderer> ().material = redMat;
+				break;
+
+			case "blue":
+				ownershipTokens [space].GetComponent<Renderer> ().material = blueMat;
+				break;
+
+			case "green":
+				ownershipTokens [space].GetComponent<Renderer> ().material = greenMat;
+				break;
+
+			case "yellow":
+				ownershipTokens [space].GetComponent<Renderer> ().material = yellowMat;
+				break;
+	
+			}
 		}
 
 
@@ -70,36 +71,28 @@ public class TokensS : MonoBehaviour {
 		//ownershipTokens [space].GetComponent<Renderer> ().enabled = true;
 
 
-		switch (player) {
-		case 0:
-			
-				ownershipTokens [space].GetComponent<Renderer> ().material = p1MortMat;
-		
-
-			break;
-
-		case 1:
-			
-				ownershipTokens [space].GetComponent<Renderer> ().material = p2MortMat;
-
-				
-			break;
-		case 2:
-			
-				ownershipTokens [space].GetComponent<Renderer> ().material = p3MortMat;
-
-			break;
-
-		case 3:
-			
-				ownershipTokens [space].GetComponent<Renderer> ().material =p4MortMat;
-			
-			break;
-
-		case 666:
+		if (player == 666)
 			ownershipTokens [space].GetComponent<Renderer> ().enabled = false;
-			break;
+		else {
 
+			switch (this.GetComponent<MainGameS>().players[player].color) {
+			case "red":
+				ownershipTokens [space].GetComponent<Renderer> ().material = redMortMat;
+				break;
+
+			case "blue":
+				ownershipTokens [space].GetComponent<Renderer> ().material = blueMortMat;
+				break;
+
+			case "green":
+				ownershipTokens [space].GetComponent<Renderer> ().material = greenMortMat;
+				break;
+
+			case "yellow":
+				ownershipTokens [space].GetComponent<Renderer> ().material = yellowMortMat;
+				break;
+
+			}
 		}
 
 
@@ -107,38 +100,30 @@ public class TokensS : MonoBehaviour {
 	}
 	public void ChangeUnMortgage(int space, int player){
 
-		switch (player) {
-		case 0:
-
-			ownershipTokens [space].GetComponent<Renderer> ().material = p1Mat;
-
-
-			break;
-
-		case 1:
-
-			ownershipTokens [space].GetComponent<Renderer> ().material = p2Mat;
-
-
-			break;
-		case 2:
-
-			ownershipTokens [space].GetComponent<Renderer> ().material = p3Mat;
-
-			break;
-
-		case 3:
-
-			ownershipTokens [space].GetComponent<Renderer> ().material = p4Mat;
-
-			break;
-
-		case 666:
+		if (player == 666)
 			ownershipTokens [space].GetComponent<Renderer> ().enabled = false;
-			break;
+		else {
 
+			switch (this.GetComponent<MainGameS>().players[player].color) {
+			case "red":
+				ownershipTokens [space].GetComponent<Renderer> ().material = redMat;
+				break;
 
+			case "blue":
+				ownershipTokens [space].GetComponent<Renderer> ().material = blueMat;
+				break;
+
+			case "green":
+				ownershipTokens [space].GetComponent<Renderer> ().material = greenMat;
+				break;
+
+			case "yellow":
+				ownershipTokens [space].GetComponent<Renderer> ().material = yellowMat;
+				break;
+
+			}
 		}
+
 	}
 
 
@@ -152,36 +137,28 @@ public class TokensS : MonoBehaviour {
 		//ownershipTokens [space].GetComponent<Renderer> ().enabled = true;
 
 
-		switch (player) {
-		case 0:
-
-			ownershipTokens [space].GetComponent<Renderer> ().material = p1MortMat;
-
-
-			break;
-
-		case 1:
-
-			ownershipTokens [space].GetComponent<Renderer> ().material = p2MortMat;
-
-
-			break;
-		case 2:
-
-			ownershipTokens [space].GetComponent<Renderer> ().material = p3MortMat;
-
-			break;
-
-		case 3:
-
-			ownershipTokens [space].GetComponent<Renderer> ().material =p4MortMat;
-
-			break;
-
-		case 666:
+		if (player == 666)
 			ownershipTokens [space].GetComponent<Renderer> ().enabled = false;
-			break;
+		else {
 
+			switch (this.GetComponent<MainGameS>().players[player].color) {
+			case "red":
+				ownershipTokens [space].GetComponent<Renderer> ().material = redSelectedMat;
+				break;
+
+			case "blue":
+				ownershipTokens [space].GetComponent<Renderer> ().material = blueSelectedMat;
+				break;
+
+			case "green":
+				ownershipTokens [space].GetComponent<Renderer> ().material = greenSelectedMat;
+				break;
+
+			case "yellow":
+				ownershipTokens [space].GetComponent<Renderer> ().material = yellowSelectedMat;
+				break;
+
+			}
 		}
 
 
@@ -189,37 +166,28 @@ public class TokensS : MonoBehaviour {
 	}
 	public void ChangeUnselect(int space, int player){
 
-		switch (player) {
-		case 0:
-
-			ownershipTokens [space].GetComponent<Renderer> ().material = p1Mat;
-
-
-			break;
-
-		case 1:
-
-			ownershipTokens [space].GetComponent<Renderer> ().material = p2Mat;
-
-
-			break;
-		case 2:
-
-			ownershipTokens [space].GetComponent<Renderer> ().material = p3Mat;
-
-			break;
-
-		case 3:
-
-			ownershipTokens [space].GetComponent<Renderer> ().material = p4Mat;
-
-			break;
-
-		case 666:
+		if (player == 666)
 			ownershipTokens [space].GetComponent<Renderer> ().enabled = false;
-			break;
+		else {
 
+			switch (this.GetComponent<MainGameS> ().players [player].color) {
+			case "red":
+				ownershipTokens [space].GetComponent<Renderer> ().material = redMat;
+				break;
 
+			case "blue":
+				ownershipTokens [space].GetComponent<Renderer> ().material = blueMat;
+				break;
+
+			case "green":
+				ownershipTokens [space].GetComponent<Renderer> ().material = greenMat;
+				break;
+
+			case "yellow":
+				ownershipTokens [space].GetComponent<Renderer> ().material = yellowMat;
+				break;
+
+			}
 		}
 	}
 

@@ -24,7 +24,8 @@ public class GameMasterS : MonoBehaviour {
 	public static string saveLoadLocation2;
 
 
-	 
+	public static string[] customNames = new string[4];
+	public static string[] colorChoice = new string[4];
 
 
 	// Use this for initialization
@@ -36,8 +37,15 @@ public class GameMasterS : MonoBehaviour {
 		Debug.Log ("Saved");
 		DontDestroyOnLoad (this.gameObject);
 
+		customNames [0] = "Player 1";
+		customNames [1] = "Player 2";
+		customNames [2] = "Player 3";
+		customNames [3] = "Player 4";
 
-
+		customNames [0] = "red";
+		customNames [1] = "blue";
+		customNames [2] = "green";
+		customNames [3] = "yellow";
 		
 	}
 	

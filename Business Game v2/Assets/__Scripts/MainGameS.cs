@@ -89,6 +89,8 @@ public class MainGameS : MonoBehaviour {
 	public GameObject doubleRollDisplay1;
 	public GameObject doubleRollDisplay2;
 	public int doublesCount;
+	public bool wasJustInJail = false;
+	public GameObject rerollDoublesButton;
 
 	//Jail Rules
 	public GameObject jailRollButton;
@@ -118,15 +120,26 @@ public class MainGameS : MonoBehaviour {
 	public GameObject cashDesireDisplay;
 	public GameObject propOfferDisplay;
 	public GameObject propDesireDisplay;
+	public GameObject theyWant;
+	public GameObject theyOffer;
 	//public GameObject tradeOfferFor;
+
+	public Sprite[,] housesVis = new Sprite[4,2];
+
 
 	// Use this for initialization
 	void Start () {
+		//this.GetComponent<Camera> ().orthographicSize = 5;
 		savepath = GameMasterS.saveLoadLocation2;
 		turnIndicator = GameObject.Find ("TurnIndicator");
 		rollButton = GameObject.Find ("Roll Button");
 		AssignMovementSpots();
 		AssignPlayers ();
+		if (!GameMasterS.continuingGame) {
+			AssignHouseVisuals ();
+			this.GetComponent<NameChangeS> ().LoadNames ();
+			this.GetComponent<PlayerColorChangerS> ().InitializePiecesByColor ();
+		}
 		GatherSpaceSelectors ();
 		currentPlayer = 0;
 
@@ -134,6 +147,8 @@ public class MainGameS : MonoBehaviour {
 
 		playerNotes [0].GetComponent<Text>().text = "Your Turn";
 		loseCount = 0;
+
+
 
 
 		mun = "#";
@@ -167,6 +182,8 @@ public class MainGameS : MonoBehaviour {
 		if (GameMasterS.continuingGame) {
 			LoadGameData ();
 		}
+
+
 				
 			
 		
@@ -195,10 +212,10 @@ public class MainGameS : MonoBehaviour {
 	void AssignPlayers(){
 		players = new Player[4];
 
-		players[0] = new Player(1, GameObject.Find("Player1_Object"));
-		players[1] = new Player(2, GameObject.Find("Player2_Object"));	
-		players[2] = new Player(3, GameObject.Find("Player3_Object"));
-		players[3] = new Player(4, GameObject.Find("Player4_Object"));
+		players[0] = new Player(1, GameObject.Find("Player1_Object"),GameMasterS.colorChoice[0]);
+		players[1] = new Player(2, GameObject.Find("Player2_Object"),GameMasterS.colorChoice[1]);	
+		players[2] = new Player(3, GameObject.Find("Player3_Object"),GameMasterS.colorChoice[2]);
+		players[3] = new Player(4, GameObject.Find("Player4_Object"),GameMasterS.colorChoice[3]);
 
 
 	}
@@ -235,6 +252,8 @@ public class MainGameS : MonoBehaviour {
 			players [x].jail=  bool.Parse(playerData [5]);
 			players [x].doNotCollectFromGo=  bool.Parse(playerData [6]);
 			players [x].inTheGame=  bool.Parse(playerData [7]);
+			players [x].color=  playerData [8];
+			GameMasterS.customNames [x]=  playerData [9];
 			if(players[x].inTheGame==false)
 			{
 				currentPlayer = x;
@@ -245,7 +264,9 @@ public class MainGameS : MonoBehaviour {
 
 
 		reader.Close ();
-
+		AssignHouseVisuals ();
+		this.GetComponent<PlayerColorChangerS> ().InitializePiecesByColor ();
+		this.GetComponent<NameChangeS> ().LoadNames ();
 		currentPlayer = realCurrentPlayer;
 		turnIndicator.GetComponent<TurnIndicatorS> ().ChangePlayer (currentPlayer);
 
@@ -357,8 +378,8 @@ public class MainGameS : MonoBehaviour {
 			if (doublesCount == 3) {
 				//display note on screen
 				this.GetComponent<SpaceLogicS> ().GoToJail ();
-				doubleRollDisplay1.GetComponent<Text> ().enabled = false;
-				doubleRollDisplay2.GetComponent<Text> ().enabled = false;
+				//doubleRollDisplay1.GetComponent<Text> ().enabled = false;
+				//doubleRollDisplay2.GetComponent<Text> ().enabled = false;
 				rollButton.SetActive (false);
 				die1 = -1;
 				die2 = -3;
@@ -397,6 +418,7 @@ public class MainGameS : MonoBehaviour {
 
 
 	public void Reroll(){
+		TurnOffTurnActions ();
 		rollButton.SetActive (true);
 		rollButton.GetComponent<Button> ().interactable = true;
 
@@ -411,17 +433,24 @@ public class MainGameS : MonoBehaviour {
 	}
 
 	public void TurnOnTurnActions(){
-		if (GameMasterS.gameMode == GameMasterS.BOARD && die1==die2&& !players[currentPlayer].lostTurn) {
-			Reroll ();
+		//if (GameMasterS.gameMode == GameMasterS.BOARD && die1==die2&& !players[currentPlayer].lostTurn) {
+			//Reroll ();
 
-		} else {
-
+		//} else {
+		doubleRollDisplay1.GetComponent<Text> ().enabled = false;
+		doubleRollDisplay2.GetComponent<Text> ().enabled = false;
 			tradeButton.SetActive (true);
 			mortgageButton.SetActive (true);
 			if (GameMasterS.gameMode == GameMasterS.BOARD)
 				developButton.SetActive (true);
-			endTurnButton.SetActive (true);
+		if (GameMasterS.gameMode == GameMasterS.BOARD && die1 == die2 && !players [currentPlayer].lostTurn&&!wasJustInJail) {
+			rerollDoublesButton.SetActive (true);
 		}
+			else{
+			wasJustInJail = false;
+			endTurnButton.SetActive (true);
+			}
+		
 
 
 	}
@@ -431,6 +460,7 @@ public class MainGameS : MonoBehaviour {
 		mortgageButton.SetActive (false);
 		developButton.SetActive (false);
 		endTurnButton.SetActive (false);
+		rerollDoublesButton.SetActive (false);
 
 
 	}
@@ -744,6 +774,8 @@ public class MainGameS : MonoBehaviour {
 			if (horH == "house") {
 				developSelected.GetComponent<Text> ().text = "Built house on " + sname;
 				this.GetComponent<SpaceLogicS> ().Gameboard [space].numberOfHouses++;
+				print ("name"+housesVis [currentPlayer, 0].name);
+				this.GetComponent<SpaceLogicS> ().Gameboard [space].ActivateVisuals (housesVis[currentPlayer,0]);
 
 
 			}
@@ -751,6 +783,7 @@ public class MainGameS : MonoBehaviour {
 			if (horH == "hotel") {
 				developSelected.GetComponent<Text> ().text = "Built hotel on " + sname;
 				this.GetComponent<SpaceLogicS> ().Gameboard [space].hotel = true;
+				this.GetComponent<SpaceLogicS> ().Gameboard [space].ActivateVisuals (housesVis[currentPlayer,1]);
 
 
 			}
@@ -758,7 +791,7 @@ public class MainGameS : MonoBehaviour {
 
 
 		
-			this.GetComponent<SpaceLogicS> ().Gameboard [space].ActivateVisuals ();
+
 			players [currentPlayer].money -= cost;
 			//redeemSelected.GetComponent<Text> ().text = "Success";
 			developEngageButton.GetComponent<Button> ().onClick.RemoveAllListeners ();
@@ -927,8 +960,11 @@ public class MainGameS : MonoBehaviour {
 		tradeInitiateButton2.SetActive (false);
 		//tradeOfferFor.SetActive (true);
 		goBackbutton.SetActive (false);
+		theyWant.SetActive (true);
+		theyOffer.SetActive (true);
 
-		turnIndicator.GetComponent<TurnIndicatorS>().ChangeText(string.Format("P{0} Trade",enemy));
+		turnIndicator.GetComponent<TurnIndicatorS>().ChangeText(string.Format("P{0} Decision",enemy+1));
+		tradeText4.GetComponent<Text> ().text = string.Format ("P{0} wants to trade", currentPlayer+1);
 
 		tradeText4.SetActive (true);
 
@@ -942,12 +978,12 @@ public class MainGameS : MonoBehaviour {
 
 		if (cashOffer != 0) {
 			cashOfferDisplay.SetActive (true);
-			cashOfferDisplay.GetComponent<Text> ().text = string.Format ("Their {0}{1}", mun, cashOffer);
+			cashOfferDisplay.GetComponent<Text> ().text = string.Format ("{0}{1}", mun, cashOffer);
 		}
 
 		if (cashDesire != 0) {
 			cashDesireDisplay.SetActive (true);
-			cashDesireDisplay.GetComponent<Text> ().text = string.Format ("Your {0}{1}", mun, cashDesire);
+			cashDesireDisplay.GetComponent<Text> ().text = string.Format ("{0}{1}", mun, cashDesire);
 		}
 
 		tradeAccept2.GetComponent<Button> ().onClick.RemoveAllListeners ();
@@ -976,6 +1012,8 @@ public class MainGameS : MonoBehaviour {
 		tradeText4.SetActive (false);
 		propDesireDisplay.SetActive(false);
 		propOfferDisplay.SetActive(false);
+		theyWant.SetActive (false);
+		theyOffer.SetActive (false);
 
 		players [enemy].money += cashOffer;
 		players [enemy].money -= cashDesire;
@@ -987,15 +1025,30 @@ public class MainGameS : MonoBehaviour {
 			count++;
 			if (space.selected && space.owner == currentPlayer) {
 				this.GetComponent<SpaceLogicS> ().Gameboard [count].selected = false;
+
 				this.GetComponent<TokensS> ().ChangeUnselect (count, this.GetComponent<SpaceLogicS> ().Gameboard [count].owner);
 				this.GetComponent<TokensS> ().ChangeOwnership(count, enemy);
 				space.owner = enemy;
+				if (space.hotel) {
+					this.GetComponent<SpaceLogicS> ().Gameboard [count].ActivateVisuals (housesVis [space.owner, 1]);
+
+				} else {
+					this.GetComponent<SpaceLogicS> ().Gameboard [count].ActivateVisuals (housesVis [space.owner, 0]);
+
+				}
 			} else {
 				if (space.selected && space.owner == enemy) {
 					this.GetComponent<SpaceLogicS> ().Gameboard [count].selected = false;
 					this.GetComponent<TokensS> ().ChangeUnselect (count, this.GetComponent<SpaceLogicS> ().Gameboard [count].owner);
 					this.GetComponent<TokensS> ().ChangeOwnership(count, currentPlayer);
 					space.owner = currentPlayer;
+					if (space.hotel) {
+						this.GetComponent<SpaceLogicS> ().Gameboard [count].ActivateVisuals (housesVis [space.owner, 1]);
+
+					} else {
+						this.GetComponent<SpaceLogicS> ().Gameboard [count].ActivateVisuals (housesVis [space.owner, 0]);
+
+					}
 				}
 			}
 
@@ -1018,6 +1071,9 @@ public class MainGameS : MonoBehaviour {
 		tradeText4.SetActive (false);
 		propDesireDisplay.SetActive(false);
 		propOfferDisplay.SetActive(false);
+		theyWant.SetActive (false);
+		theyOffer.SetActive (false);
+		turnIndicator.GetComponent<TurnIndicatorS> ().ChangePlayer (currentPlayer);
 		int count = -1;
 		foreach (Space space in this.GetComponent<SpaceLogicS>().Gameboard) {
 			count++;
@@ -1076,10 +1132,12 @@ public class MainGameS : MonoBehaviour {
 		});
 
 		tradeText.SetActive (true);
-		tradeTitle.GetComponent<Text> ().text =string.Format ("P{0} Trade", (this.GetComponent<SpaceLogicS>().Gameboard[count].owner+1).ToString());
-
-		tradeText.GetComponent<Text> ().text =string.Format ("P{0} will trade {4}{1} for {2}", 
-			(currentPlayer+1).ToString(), tradeOffer.ToString(), sname,mun);
+		//tradeTitle.GetComponent<Text> ().text =string.Format ("P{0} Trade", this.GetComponent<SpaceLogicS>().Gameboard[count].owner+1);
+		tradeTitle.GetComponent<Text> ().text = "Trade Offer";
+		tradeText.GetComponent<Text> ().text =string.Format ("P{0} will trade {3}{1} for {2}", 
+			currentPlayer+1, tradeOffer, sname,mun);
+		turnIndicator.GetComponent<TurnIndicatorS>().ChangeText(string.Format("P{0} Decision", 
+			this.GetComponent<SpaceLogicS>().Gameboard[count].owner+1));
 		
 
 	}
@@ -1096,8 +1154,8 @@ public class MainGameS : MonoBehaviour {
 		this.GetComponent<TokensS> ().ChangeOwnership (count, currentPlayer);
 
 		tradeSelected.SetActive (false);
-		tradeText.GetComponent<Text> ().text = string.Format ("Traded P{0} {4}{1} for {2}", (this.GetComponent<SpaceLogicS> ().Gameboard [count].owner + 1).ToString (), tradeOffer, sname,mun);
-		
+		tradeText.GetComponent<Text> ().text = string.Format ("Traded P{0} {3}{1} for {2}", (this.GetComponent<SpaceLogicS> ().Gameboard [count].owner + 1).ToString (), tradeOffer, sname,mun);
+		turnIndicator.GetComponent<TurnIndicatorS> ().ChangePlayer (currentPlayer);
 		ListenerCleanup ();
 
 	}
@@ -1108,8 +1166,8 @@ public class MainGameS : MonoBehaviour {
 		tradeReject.SetActive (false);
 		tradeAccept.SetActive (false);
 		goBackbutton.SetActive (true);
-		tradeText.GetComponent<Text> ().text = string.Format ("P{0} rejected your offed", (this.GetComponent<SpaceLogicS> ().Gameboard [count].owner + 1).ToString ());
-
+		tradeText.GetComponent<Text> ().text = string.Format ("P{0} rejected your offer", (this.GetComponent<SpaceLogicS> ().Gameboard [count].owner + 1).ToString ());
+		turnIndicator.GetComponent<TurnIndicatorS> ().ChangePlayer (currentPlayer);
 		ListenerCleanup ();
 	}
 
@@ -1237,14 +1295,21 @@ public class MainGameS : MonoBehaviour {
 
 		doubleRollDisplay2.GetComponent<Text> ().enabled = true;
 		doubleRollDisplay2.GetComponent<Text> ().text = die2.ToString ();
-
+		jailPayButton.SetActive (false);
+		jailRollButton.SetActive (false);
 
 		if (die1 == die2) {
-			this.GetComponent<SpaceLogicS> ().spaceTitle.GetComponent<Text> ().text = "Out Of Jail";
+			this.GetComponent<SpaceLogicS> ().spaceTitle.GetComponent<Text> ().text = "Out of Jail!";
+			this.GetComponent<SpaceLogicS> ().spaceText.GetComponent<Text> ().text = "Escaped! Move next turn";
+			this.GetComponent<SpaceLogicS> ().spaceText.SetActive (true);
 			players [currentPlayer].jail = false;
 			players [currentPlayer].lostTurn = false;
 			players [currentPlayer].lostTurnTime = 0;
-			jailOkayButton.SetActive (true);
+			playerNotes [currentPlayer].GetComponent<Text> ().text = "";
+			//jailOkayButton.SetActive (true);
+			wasJustInJail=true;
+			this.GetComponent<SpaceLogicS> ().oKButton.SetActive (true);
+
 
 		} else {
 			this.GetComponent<SpaceLogicS> ().spaceTitle.GetComponent<Text> ().text = "Still in Jail";
@@ -1262,10 +1327,13 @@ public class MainGameS : MonoBehaviour {
 		players [currentPlayer].lostTurnTime = 0;
 		jailPayButton.SetActive (false);
 		jailRollButton.SetActive (false);
+		this.GetComponent<SpaceLogicS> ().spaceText.SetActive (true);
 		this.GetComponent<SpaceLogicS> ().spaceTitle.GetComponent<Text> ().text = "Out of Jail!";
-		this.GetComponent<SpaceLogicS> ().spaceText.GetComponent<Text> ().text = "Paid! Move again next turn";
+		this.GetComponent<SpaceLogicS> ().spaceText.GetComponent<Text> ().text = "Paid! Move next turn";
 		playerNotes [currentPlayer].GetComponent<Text> ().text = "";
+		wasJustInJail = true;
 		this.GetComponent<SpaceLogicS> ().oKButton.SetActive (true);
+
 
 
 	}
@@ -1275,7 +1343,7 @@ public class MainGameS : MonoBehaviour {
 		doubleRollDisplay2.GetComponent<Text> ().enabled = false;
 
 		jailOkayButton.SetActive (false);
-		this.GetComponent<SpaceLogicS> ().spaceText.GetComponent<Text> ().text = "Escaped! Move again next turn";
+		this.GetComponent<SpaceLogicS> ().spaceText.GetComponent<Text> ().text = "Escaped!";
 		playerNotes [currentPlayer].GetComponent<Text> ().text = "";
 		this.GetComponent<SpaceLogicS> ().oKButton.SetActive (true);
 
@@ -1387,5 +1455,59 @@ public class MainGameS : MonoBehaviour {
 
 	}
 
+	public void loadHouseVisuals(){
+		int count = -1;
+		print ("loading visuals");
+		foreach (Space space in this.GetComponent<SpaceLogicS>().Gameboard) {
+			count++;
+			if (space.owned){
+				if (space.hotel) {
+					this.GetComponent<SpaceLogicS> ().Gameboard [count].ActivateVisuals (housesVis [space.owner, 1]);
+
+				} else {
+					this.GetComponent<SpaceLogicS> ().Gameboard [count].ActivateVisuals (housesVis [space.owner, 0]);
+				}
+			}
+		}
+
+
+	}
+
+
+
+	public void AssignHouseVisuals(){
+		for (int x = 0; x < 4; x++) {
+			print ("player color= " + players [x].color);
+			switch (players [x].color) {
+
+			case "red":
+				housesVis [x, 0] = this.GetComponentInChildren<VisualHolderS> ().redPlayerHouse;
+				housesVis [x, 1] = this.GetComponentInChildren<VisualHolderS> ().redPlayerHotel;
+				break;
+
+			case "blue":
+				housesVis [x, 0] = this.GetComponentInChildren<VisualHolderS> ().bluePlayerHouse;
+				housesVis [x, 1] = this.GetComponentInChildren<VisualHolderS> ().bluePlayerHotel;
+				break;
+
+			case "green":
+				housesVis [x, 0] = this.GetComponentInChildren<VisualHolderS> ().greenPlayerHouse;
+				housesVis [x, 1] = this.GetComponentInChildren<VisualHolderS> ().greenPlayerHotel;
+				break;
+
+			case "yellow":
+				housesVis [x, 0] = this.GetComponentInChildren<VisualHolderS> ().yellowPlayerHouse;
+				housesVis [x, 1] = this.GetComponentInChildren<VisualHolderS> ().yellowPlayerHotel;
+				break;
+
+
+
+			}
+
+		}
+		
+
+
+	}
 
 }

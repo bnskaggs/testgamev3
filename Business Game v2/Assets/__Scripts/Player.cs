@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class Player {
 	public int playerNumber;
+	public string cname = "Sam";
 	public GameObject playerObject = null;
 	public float money = 12000;
 	public int location;
@@ -12,6 +13,7 @@ public class Player {
 	public bool jail = false;
 	public bool doNotCollectFromGo=false;
 	public bool inTheGame = true;
+	public string color = "red";
 
 
 	public Player()
@@ -21,11 +23,19 @@ public class Player {
 
 	}
 
-	public Player(int number, GameObject pO){
+	public Player(int number, GameObject pO,string color2){
 		playerNumber = number;
 		location = 0;
 		playerObject = pO;
+		color = color2;
+	}
 
+	public Player(int number, GameObject pO,string color2, string name){
+		playerNumber = number;
+		location = 0;
+		playerObject = pO;
+		color = color2;
+		cname = name; 
 	}
 
 	public void MoneyChange(float moneyGainedOrLost){

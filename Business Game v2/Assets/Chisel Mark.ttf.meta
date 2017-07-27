@@ -1,0 +1,21 @@
+fileFormatVersion: 2
+guid: 654f8466da736b6469e47e7c48037c52
+timeCreated: 1499928823
+licenseType: Pro
+TrueTypeFontImporter:
+  serializedVersion: 4
+  fontSize: 16
+  forceTextureCase: -2
+  characterSpacing: 0
+  characterPadding: 1
+  includeFontData: 1
+  fontName: Chisel Mark
+  fontNames:
+  - Chisel Mark
+  fallbackFontReferences: []
+  customCharacters: 
+  fontRenderingMode: 0
+  ascentCalculationMode: 1
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

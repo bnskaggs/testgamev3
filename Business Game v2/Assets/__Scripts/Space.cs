@@ -40,12 +40,19 @@ public class Space : MonoBehaviour {
 
 
 
-	public void ActivateVisuals(){
+	public void ActivateVisuals(Sprite vis){
 		for (int x = 0; x < numberOfHouses; x++) {
-			hVisuals [x].GetComponent<MeshRenderer> ().enabled = true;
+			print (x + " " + numberOfHouses);
+			hVisuals [x].GetComponent<SpriteRenderer> ().sprite = vis;
+			hVisuals [x].GetComponent<SpriteRenderer> ().enabled = true;
 		}
-		if (hotel)
-			hVisuals [3].GetComponent<MeshRenderer> ().enabled = true;
+		if (hotel) {
+			for (int x = 0; x < numberOfHouses; x++) {
+				hVisuals [x].GetComponent<SpriteRenderer> ().enabled = false;
+			}
+			hVisuals [3].GetComponent<SpriteRenderer> ().sprite = vis;
+			hVisuals [3].GetComponent<SpriteRenderer> ().enabled = true;
+		}
 				
 
 		

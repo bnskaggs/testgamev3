@@ -46,13 +46,17 @@ public class SpaceLogicS : MonoBehaviour {
 	private bool chanceJail=false;
 	private bool chanceRest=false;
 	public bool eventHappened=false;
+	public bool speeding = false;
+
+
 
 
 	// Use this for initialization
 	void Start () {
 		
 		savepath =   GameMasterS.saveLoadLocation;
-		AssignVisuals ();
+		if(!GameMasterS.continuingGame)
+			AssignVisuals ();
 
 		//if (GameMasterS.level != GameMasterS.INTERN)
 		//StartCoroutine(GetSpaceData());
@@ -218,6 +222,8 @@ public class SpaceLogicS : MonoBehaviour {
 			Gameboard [x].costToRent = float.Parse(spaceData [11]);
 			Gameboard [x].isMortgaged = bool.Parse (spaceData [12]);
 			Gameboard[x].costPerHotel = float.Parse(spaceData [13]);
+
+
 		
 		}
 
@@ -229,6 +235,8 @@ public class SpaceLogicS : MonoBehaviour {
 				this.GetComponent<TokensS> ().ChangeMortgage (x, Gameboard [x].owner);
 
 		}*/
+		AssignVisuals ();
+		this.GetComponent<MainGameS> ().loadHouseVisuals ();
 
 	}
 
@@ -237,6 +245,8 @@ public class SpaceLogicS : MonoBehaviour {
 			changeOwners = false;
 			for (int x = 0; x < Gameboard.Length; x++) {
 				this.GetComponent<TokensS> ().ChangeOwnership (x, Gameboard [x].owner);
+
+
 				if (Gameboard [x].isMortgaged)
 					this.GetComponent<TokensS> ().ChangeMortgage (x, Gameboard [x].owner);
 
@@ -320,7 +330,7 @@ public class SpaceLogicS : MonoBehaviour {
 		
 	void AssignVisuals (){
 		//hVisualHolders = new GameObject[36];
-
+		print("assigning visuals");
 		for(int x = 0; x<36; x++)
 		{
 			Gameboard[x].hVisualHolder = GameObject.Find (string.Format ("H ({0})", x.ToString ()));
@@ -628,7 +638,9 @@ public class SpaceLogicS : MonoBehaviour {
 			spaceTitle.GetComponent<Text> ().text = "Jail";
 			this.GetComponent<MainGameS> ().players [currentPlayer].jail = true;
 			spaceTitle.SetActive (true);
-			spaceText.GetComponent<Text> ().text = "In Jail for 3 turns";
+			if (!speeding)
+				spaceText.GetComponent<Text> ().text = "Jailed for 3 turns";
+			speeding = false;
 			this.GetComponent<MainGameS> ().playerNotes [currentPlayer].GetComponent<Text> ().text = "In Jail: 3 ";
 			spaceText.SetActive (true);
 			oKButton.SetActive (true);
@@ -642,7 +654,8 @@ public class SpaceLogicS : MonoBehaviour {
 	public void GoToJail(){
 		currentRoll = 0;
 
-
+		spaceText.GetComponent<Text> ().text = "Jailed 3 turns for speeding";
+		speeding = true;
 		jailSpace ();
 		//Display reason for jail
 
@@ -679,7 +692,7 @@ public class SpaceLogicS : MonoBehaviour {
 
 			}
 			this.GetComponent<MainGameS> ().players [currentPlayer].money += 100 * payCount;
-			spaceText.GetComponent<Text> ().text = string.Format ("Everyone gave {0}100 to p{1}", mun, (currentPlayer + 1.ToString ()));
+			spaceText.GetComponent<Text> ().text = string.Format ("Everyone gave {0}100 to p{1}", mun, currentPlayer + 1);
 		}
 		spaceText.SetActive (true);
 		oKButton.SetActive (true);
@@ -940,7 +953,7 @@ public class SpaceLogicS : MonoBehaviour {
 
 			}
 			this.GetComponent<MainGameS> ().players [currentPlayer].money -= 100 * payCount;
-			spaceText.GetComponent<Text> ().text = string.Format("Everyone got {0}100 from p{1}",mun,(currentPlayer+1.ToString()));
+			spaceText.GetComponent<Text> ().text = string.Format("Everyone got {0}100 from p{1}",mun,currentPlayer+1);
 
 
 
@@ -955,6 +968,7 @@ public class SpaceLogicS : MonoBehaviour {
 		oKButton.SetActive (false);
 		spaceText.SetActive (false);
 		spaceTitle.SetActive (false);
+
 
 		this.GetComponent<MainGameS> ().TurnOnTurnActions ();
 		eventHappened = false;

@@ -23,8 +23,8 @@ public class SaveGameS : MonoBehaviour {
 		sw.WriteLine (this.GetComponent<MainGameS> ().currentPlayer);
 		sw.WriteLine (this.GetComponent<MainGameS> ().players.Length);
 		foreach (Player player in this.GetComponent<MainGameS>().players) {
-			sw.WriteLine(string.Format("{0},{1},{2},{3},{4},{5},{6},{7}",
-				player.playerNumber,player.money,player.location,player.lostTurn,player.lostTurnTime,player.jail,player.doNotCollectFromGo,player.inTheGame));
+			sw.WriteLine(string.Format("{0},{1},{2},{3},{4},{5},{6},{7},{8},{9}",
+				player.playerNumber,player.money,player.location,player.lostTurn,player.lostTurnTime,player.jail,player.doNotCollectFromGo,player.inTheGame,player.color,player.cname));
 
 		}
 		sw.WriteLine (this.GetComponent<SpaceLogicS>().Gameboard.Length);
