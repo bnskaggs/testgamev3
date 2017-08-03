@@ -140,11 +140,13 @@ public class MainGameS : MonoBehaviour {
 			this.GetComponent<NameChangeS> ().LoadNames ();
 			this.GetComponent<PlayerColorChangerS> ().InitializePiecesByColor ();
 		}
+		GatherSpaces ();
 		GatherSpaceSelectors ();
 		currentPlayer = 0;
 
 		Screen.orientation = ScreenOrientation.Portrait;
 
+		GatherPlayerNotes ();
 		playerNotes [0].GetComponent<Text>().text = "Your Turn";
 		loseCount = 0;
 
@@ -155,7 +157,7 @@ public class MainGameS : MonoBehaviour {
 
 		if (GameMasterS.level == GameMasterS.INDIA)
 			mun = "₹";
-		if (GameMasterS.level ==GameMasterS.INTERN)
+		if (GameMasterS.level ==GameMasterS.INTERN || GameMasterS.level ==GameMasterS.GENERIC)
 			mun = "$";
 
 
@@ -200,10 +202,11 @@ public class MainGameS : MonoBehaviour {
 
 		for(int x = 0; x<36; x++)
 		{
-			moveSpots [0, x] = GameObject.Find ("P1 S" + x.ToString());
-			moveSpots [1, x] = GameObject.Find ("P2 S" + x.ToString());
-			moveSpots [2, x] = GameObject.Find ("P3 S" + x.ToString());
-			moveSpots [3, x] = GameObject.Find ("P4 S" + x.ToString());
+			GameObject temp = GameObject.Find ("B" + x.ToString ());
+			moveSpots [0, x] = temp.transform.FindDeepChild ("P1 Spot").gameObject;
+			moveSpots [1, x] = temp.transform.FindDeepChild ("P2 Spot").gameObject;
+			moveSpots [2, x] = temp.transform.FindDeepChild ("P3 Spot").gameObject;
+			moveSpots [3, x] = temp.transform.FindDeepChild ("P4 Spot").gameObject;
 		}
 
 
@@ -220,15 +223,35 @@ public class MainGameS : MonoBehaviour {
 
 	}
 
-	void GatherSpaceSelectors(){
-
-		for(int x = 0; x<36; x++)
-		{
-			this.GetComponent<SpaceLogicS> ().Gameboard [x].spaceSelectButton = GameObject.Find ("B" + x.ToString());
+	void GatherSpaces(){
+		for (int x = 0; x < 36; x++) {
+			this.GetComponent<SpaceLogicS> ().Gameboard [x] = GameObject.Find ("B" + x.ToString()).GetComponentInChildren<Space>();
 
 		}
 
 
+	}
+
+	void GatherSpaceSelectors(){
+
+		for(int x = 0; x<36; x++)
+		{
+			//print ("B" + x.ToString ());
+			//Button buttonn = GameObject.Find ("B" + x.ToString()).GetComponentInChildren<Button>();
+
+			this.GetComponent<SpaceLogicS> ().Gameboard [x].spaceSelectButton = GameObject.Find ("B" + x.ToString()).GetComponentInChildren<Button>();
+
+		}
+
+
+
+	}
+
+	void GatherPlayerNotes(){
+		for (int x = 0; x < 4; x++) {
+			playerNotes [x] = GameObject.Find (string.Format ("Player {0} Note", x + 1));
+
+		}
 
 	}
 
@@ -1509,5 +1532,7 @@ public class MainGameS : MonoBehaviour {
 
 
 	}
+
+
 
 }

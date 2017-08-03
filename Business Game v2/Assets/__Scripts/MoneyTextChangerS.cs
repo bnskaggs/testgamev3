@@ -24,7 +24,7 @@ public class MoneyTextChangerS : MonoBehaviour {
 
 		if (GameMasterS.level == GameMasterS.INDIA)
 			mun = "₹";
-		if (GameMasterS.level ==GameMasterS.INTERN)
+		if (GameMasterS.level ==GameMasterS.INTERN || GameMasterS.level ==GameMasterS.GENERIC)
 			mun = "$";
 		
 

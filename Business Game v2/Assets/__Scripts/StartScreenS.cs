@@ -57,6 +57,7 @@ public class StartScreenS : MonoBehaviour {
 
 		levelsList.Add ("International");
 		levelsList.Add ("India");
+		levelsList.Add ("Generic Test");
 		Debug.Log (savepath);
 		//testText.GetComponent<Text> ().text = GameMasterS.saveLoadLocation2;
 
@@ -182,6 +183,11 @@ public class StartScreenS : MonoBehaviour {
 			GameMasterS.level = GameMasterS.INDIA;
 			break;
 
+		case "Generic Test":
+			levelToPlay = "Scene_3_Game_Generic";
+			GameMasterS.level = GameMasterS.GENERIC;
+			break;
+
 
 		}
 
@@ -214,6 +220,11 @@ public class StartScreenS : MonoBehaviour {
 		case GameMasterS.INDIA:
 			levelToPlay = "Scene_2_Game_NewBoard";
 			GameMasterS.level = GameMasterS.INDIA;
+			break;
+
+		case GameMasterS.GENERIC:
+			levelToPlay = "Scene_3_Game_Generic";
+			GameMasterS.level = GameMasterS.GENERIC;
 			break;
 
 

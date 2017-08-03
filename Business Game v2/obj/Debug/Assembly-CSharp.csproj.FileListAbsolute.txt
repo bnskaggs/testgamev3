@@ -28,9 +28,6 @@ C:\Users\bnska\Desktop\Business The Game\Business Game\Temp\bin\Debug\UnityEngin
 C:\Users\bnska\Desktop\Business The Game\Business Game\obj\Debug\Assembly-CSharp.csprojResolveAssemblyReference.cache
 C:\Users\bnska\Desktop\Business The Game\Business Game\obj\Debug\Assembly-CSharp.dll
 C:\Users\bnska\Desktop\Business The Game\Business Game\obj\Debug\Assembly-CSharp.pdb
-C:\Users\bnska\Desktop\Business The Game\Repo2\testgamev3\Business Game v2\obj\Debug\Assembly-CSharp.csprojResolveAssemblyReference.cache
-C:\Users\bnska\Desktop\Business The Game\Repo2\testgamev3\Business Game v2\obj\Debug\Assembly-CSharp.dll
-C:\Users\bnska\Desktop\Business The Game\Repo2\testgamev3\Business Game v2\obj\Debug\Assembly-CSharp.pdb
 C:\Users\bnska\Desktop\Business The Game\Repo2\testgamev3\Business Game v2\Temp\bin\Debug\Assembly-CSharp.dll
 C:\Users\bnska\Desktop\Business The Game\Repo2\testgamev3\Business Game v2\Temp\bin\Debug\Assembly-CSharp.pdb
 C:\Users\bnska\Desktop\Business The Game\Repo2\testgamev3\Business Game v2\Temp\bin\Debug\UnityEditor.dll
@@ -58,3 +55,6 @@ C:\Users\bnska\Desktop\Business The Game\Repo2\testgamev3\Business Game v2\Temp\
 C:\Users\bnska\Desktop\Business The Game\Repo2\testgamev3\Business Game v2\Temp\bin\Debug\UnityEngine.Analytics.xml
 C:\Users\bnska\Desktop\Business The Game\Repo2\testgamev3\Business Game v2\Temp\bin\Debug\UnityEngine.HoloLens.xml
 C:\Users\bnska\Desktop\Business The Game\Repo2\testgamev3\Business Game v2\Temp\bin\Debug\UnityEngine.VR.xml
+C:\Users\bnska\Desktop\Business The Game\Repo2\testgamev3\Business Game v2\obj\Debug\Assembly-CSharp.csprojResolveAssemblyReference.cache
+C:\Users\bnska\Desktop\Business The Game\Repo2\testgamev3\Business Game v2\obj\Debug\Assembly-CSharp.dll
+C:\Users\bnska\Desktop\Business The Game\Repo2\testgamev3\Business Game v2\obj\Debug\Assembly-CSharp.pdb

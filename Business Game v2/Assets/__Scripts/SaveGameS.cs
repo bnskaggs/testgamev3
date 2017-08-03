@@ -27,6 +27,7 @@ public class SaveGameS : MonoBehaviour {
 				player.playerNumber,player.money,player.location,player.lostTurn,player.lostTurnTime,player.jail,player.doNotCollectFromGo,player.inTheGame,player.color,player.cname));
 
 		}
+		//sw.WriteLine (GameMasterS.BOARD);
 		sw.WriteLine (this.GetComponent<SpaceLogicS>().Gameboard.Length);
 		foreach (Space space in this.GetComponent<SpaceLogicS>().Gameboard) {
 			string boom = string.Format ("{0}&{1}&{2}", space.costWithHouses [0], space.costWithHouses [1], space.costWithHouses [2]);

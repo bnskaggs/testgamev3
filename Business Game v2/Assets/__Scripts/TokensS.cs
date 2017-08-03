@@ -26,7 +26,7 @@ public class TokensS : MonoBehaviour {
 		ownershipTokens = new GameObject[36];
 		for(int x = 0; x<36; x++)
 		{
-			ownershipTokens [x] = GameObject.Find ("T" + x.ToString());
+			ownershipTokens [x] = GameObject.Find ("B" + x.ToString ()).transform.FindDeepChild ("OwnerToken").gameObject;
 
 		}
 		

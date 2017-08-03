@@ -10,6 +10,7 @@ public class GameMasterS : MonoBehaviour {
 
 	public const string INTERN = "intern";
 	public const string INDIA = "india";
+	public const string GENERIC = "gen";
 
 
 

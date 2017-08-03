@@ -82,11 +82,12 @@ public class SpaceLogicS : MonoBehaviour {
 
 		if (GameMasterS.level == GameMasterS.INDIA)
 			mun = "₹";
-		if (GameMasterS.level ==GameMasterS.INTERN)
+		if (GameMasterS.level ==GameMasterS.INTERN || GameMasterS.level ==GameMasterS.GENERIC)
 			mun = "$";
 		
 
-
+		if (GameMasterS.level == GameMasterS.GENERIC)
+			PopulateSpaces ();
 
 		
 	}
@@ -104,8 +105,8 @@ public class SpaceLogicS : MonoBehaviour {
 			//path = Path.Combine( Application.streamingAssetsPath,"India.txt");
 			level = Resources.Load<TextAsset> ("India") as TextAsset;
 		}
-		if (GameMasterS.level == GameMasterS.INTERN) {
-			print ("intern");
+		if (GameMasterS.level == GameMasterS.INTERN || GameMasterS.level ==GameMasterS.GENERIC) {
+			print ("Level " + GameMasterS.level);
 			//path = Path.Combine( Application.streamingAssetsPath,"International2.txt");
 			level = Resources.Load<TextAsset> ("International") as TextAsset;
 		}
@@ -197,6 +198,7 @@ public class SpaceLogicS : MonoBehaviour {
 			trash = reader.ReadLine ();
 		}
 		//print (reader.ReadLine ());
+
 		int numberOfSpaces = int.Parse(reader.ReadLine ());
 
 		for (int x = 0; x < numberOfSpaces; x++) {
@@ -237,6 +239,8 @@ public class SpaceLogicS : MonoBehaviour {
 		}*/
 		AssignVisuals ();
 		this.GetComponent<MainGameS> ().loadHouseVisuals ();
+		if (GameMasterS.level == GameMasterS.GENERIC)
+			PopulateSpaces ();
 
 	}
 
@@ -333,7 +337,7 @@ public class SpaceLogicS : MonoBehaviour {
 		print("assigning visuals");
 		for(int x = 0; x<36; x++)
 		{
-			Gameboard[x].hVisualHolder = GameObject.Find (string.Format ("H ({0})", x.ToString ()));
+			Gameboard [x].hVisualHolder = GameObject.Find (string.Format ("B{0}", x.ToString ())).transform.FindDeepChild ("HVisual").gameObject;
 		}
 		int z =0;
 		foreach (Space space in Gameboard) {
@@ -348,6 +352,76 @@ public class SpaceLogicS : MonoBehaviour {
 		}
 
 
+	}
+
+	public void PopulateSpaces()
+	{
+		
+		string mun = "#";
+
+		if (GameMasterS.level == GameMasterS.INDIA)
+			mun = "₹";
+		if (GameMasterS.level ==GameMasterS.INTERN || GameMasterS.level ==GameMasterS.GENERIC)
+			mun = "$";
+		
+		for (int x = 0; x < 36; x++) {
+			GameObject temp = GameObject.Find ("B" + x.ToString ());
+			if (temp.tag != "cornerspace") {
+				temp.transform.FindDeepChild ("TopText").GetComponent<Text> ().text = Gameboard [x].sName;
+
+				if (Gameboard [x].type == spaceType.property) {
+					temp.transform.FindDeepChild ("BotText").GetComponent<Text> ().text =string.Format("{0}{1}",mun, Gameboard [x].costToBuy);
+
+					switch (Gameboard [x].color) {
+					case colorGroup.red:
+						temp.transform.FindDeepChild ("SpaceMiddle").GetComponent<Image> ().color = VisualHolderS.REDSPACECOLOR1;
+						temp.transform.FindDeepChild ("SpaceOuter").GetComponent<Image> ().color = VisualHolderS.REDSPACECOLOR2;
+
+						break;
+					case colorGroup.pink:
+						temp.transform.FindDeepChild ("SpaceMiddle").GetComponent<Image> ().color = VisualHolderS.PINKSPACECOLOR1;
+						temp.transform.FindDeepChild ("SpaceOuter").GetComponent<Image> ().color = VisualHolderS.PINKSPACECOLOR2;
+
+						break;
+					case colorGroup.green:
+						temp.transform.FindDeepChild ("SpaceMiddle").GetComponent<Image> ().color = VisualHolderS.GREENSPACECOLOR1;
+						temp.transform.FindDeepChild ("SpaceOuter").GetComponent<Image> ().color = VisualHolderS.GREENSPACECOLOR2;
+						break;
+					case colorGroup.blue:
+						temp.transform.FindDeepChild ("SpaceMiddle").GetComponent<Image> ().color = VisualHolderS.BLUESPACECOLOR1;
+						temp.transform.FindDeepChild ("SpaceOuter").GetComponent<Image> ().color = VisualHolderS.BLUESPACECOLOR2;
+						break;
+
+
+					}
+
+				}
+				if (Gameboard [x].type == spaceType.chance || Gameboard [x].type == spaceType.wtax  || Gameboard [x].type == spaceType.itax) {
+					temp.transform.FindDeepChild ("SpaceMiddle").GetComponent<Image> ().color = VisualHolderS.EXTRASPACECOLOR1;
+					temp.transform.FindDeepChild ("SpaceOuter").GetComponent<Image> ().color = VisualHolderS.EXTRASPACECOLOR2;
+					temp.transform.FindDeepChild ("BotText").gameObject.SetActive (false);
+				}
+
+
+
+			
+
+
+				if (Gameboard [x].type == spaceType.community || Gameboard [x].type == spaceType.utility) {
+					temp.transform.FindDeepChild ("SpaceMiddle").GetComponent<Image> ().color = VisualHolderS.EXTRASPACECOLOR2;
+					temp.transform.FindDeepChild ("SpaceOuter").GetComponent<Image> ().color = VisualHolderS.EXTRASPACECOLOR2;
+					temp.transform.FindDeepChild ("BotText").gameObject.SetActive (false);
+					if (Gameboard [x].type == spaceType.utility) {
+						temp.transform.FindDeepChild ("BotText").GetComponent<Text> ().text = string.Format ("{0}{1}", mun, Gameboard [x].costToBuy);
+						temp.transform.FindDeepChild ("BotText").gameObject.SetActive (true);
+					}
+				}
+			}
+
+
+
+
+		}
 	}
 
 	public void ResolveSpace (int player, int space, int roll)

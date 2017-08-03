@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 
 public enum spaceType{
@@ -31,7 +32,7 @@ public class Space : MonoBehaviour {
 	public float costPerHotel;
 	public float costWithHotel;
 	public bool isMortgaged = false;
-	public GameObject spaceSelectButton;
+	public Button spaceSelectButton;
 	public bool selected = false;
 
 
